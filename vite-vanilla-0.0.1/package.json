@@ -1,0 +1,32 @@
+{
+	"name": "vite-vanilla",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "tsc && vite build && mv dist/main.html dist/index.html && cp public/mframe.json mframe.json && npm run compile",
+		"build:windows": "tsc && vite build && move dist/main.html dist/index.html && copy public/mframe.json mframe.json && npm run compile",
+		"compile": "cp dist/index.html index.html  && mtemplate compile && rm mframe.json index.html",
+		"compile:windows": "copy dist/index.html  index.html  && mtemplate compile && del mframe.json index.html",
+		"preview": "vite preview",
+		"lint:style": "eslint --fix src/",
+		"lint:formatting": "prettier --write src/*.{ts,json}",
+		"lint": "npm run lint:style && npm run lint:formatting"
+	},
+	"devDependencies": {
+		"@typescript-eslint/eslint-plugin": "^6.16.0",
+		"@typescript-eslint/parser": "^6.16.0",
+		"@vitejs/plugin-legacy": "^5.2.0",
+		"eslint": "^8.56.0",
+		"eslint-config-prettier": "^9.1.0",
+		"mtemplate": "^1.0.7",
+		"prettier": "^3.1.1",
+		"typescript": "^5.2.2",
+		"vite": "^5.0.8",
+		"vite-plugin-eslint": "^1.8.1"
+	},
+	"dependencies": {
+		"mtemplate-loader": "^2.0.40"
+	}
+}
