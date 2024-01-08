@@ -5,6 +5,12 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
 	plugins: [eslint(), legacy({ renderModernChunks: false, targets: ['chrome 50'] })],
+	base: "./",
+	resolve: {
+		alias: {
+			"@": __dirname + "/src",
+		},
+	},
 	server: {
 		port: 3000,
 		open: 'main.html',

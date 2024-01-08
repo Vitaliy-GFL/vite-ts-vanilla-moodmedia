@@ -6,8 +6,9 @@
 	"scripts": {
 		"dev": "vite",
 		"build": "npm run lint && tsc && vite build && mv dist/main.html dist/index.html && cp public/mframe.json mframe.json && npm run compile",
-		"compile": "cp dist/index.html index.html  && mtemplate compile && rm mframe.json index.html",
 		"build:windows": "npm run lint && tsc && vite build && move dist/main.html dist/index.html && copy public/mframe.json mframe.json && npm run compile",
+		"build:simple": "vite build",
+		"compile": "cp dist/index.html index.html  && mtemplate compile && rm mframe.json index.html",
 		"compile:windows": "copy dist/index.html  index.html  && mtemplate compile && del mframe.json index.html",
 		"preview": "vite preview",
 		"lint:style": "eslint --fix ./src",
@@ -27,6 +28,7 @@
 		"vite-plugin-eslint": "^1.8.1"
 	},
 	"dependencies": {
+		"@types/node": "^20.10.7",
 		"mtemplate-loader": "^2.0.40"
 	}
 }
