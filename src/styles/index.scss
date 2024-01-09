@@ -1,0 +1,47 @@
+@use "sass:math";
+
+@function get-vh($object) {
+  $baseHeight: 1080;
+  $baseUnit: 1vh;
+  $vh: ($baseHeight * 0.01) * 1px;
+
+  @return math.div($object, $vh) * $baseUnit;
+}
+
+@function get-vw($object) {
+  $baseHeight: 1920;
+  $baseUnit: 1vw;
+  $vh: ($baseHeight * 0.01) * 1px;
+
+  @return math.div($object, $vh) * $baseUnit;
+}
+
+body {
+  padding: 0;
+  margin: 0;
+}
+
+.app-container {
+  position: relative;
+  overflow: hidden;
+  background: #ccc;
+  margin: 0 auto;
+
+ &.portrait {
+    height: 100vh;
+    width: calc(100vh / 16 * 9);
+    &.reverse {
+      height: calc(100vw / 9 * 16);
+      width: 100vw;
+    }
+  }
+
+  &.landscape {
+    height: calc(100vw / 16 * 9);
+    width: 100vw;
+    &.reverse {
+      height: 100vh;
+      width: calc(100vh / 9 * 16);
+    }
+  }
+}

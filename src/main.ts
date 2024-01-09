@@ -1,3 +1,23 @@
+import './styles/index.scss';
+
+window.addEventListener('resize', () => {
+	const appContainer = getElement('.app-container');
+	const windowHeight = (window.outerHeight);
+	const windowWidth =  (window.outerWidth);
+	const portraitAspectRatio = windowHeight / windowWidth;
+	const landscapeAspectRatio = windowWidth / windowHeight;
+
+	if (appContainer?.classList.contains('portrait')) {
+		const isOversize =  (portraitAspectRatio > 16 / 9);		
+		appContainer.classList.toggle('reverse', isOversize);
+	}
+
+	if (appContainer?.classList.contains('landscape')) {
+		const isOversize =  (landscapeAspectRatio > 16 / 9);
+		appContainer.classList.toggle('reverse', isOversize);
+	}
+});
+
 window.addEventListener("load", async () => {
 	console.log("WINDOW LOADED");
 	const appContainer = getElement("#app");
@@ -16,6 +36,7 @@ window.addEventListener("load", async () => {
 
 	// to notify player that the template is ready
 	window.Loader.ready();
+	getElement('#preview')?.remove();
 });
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
