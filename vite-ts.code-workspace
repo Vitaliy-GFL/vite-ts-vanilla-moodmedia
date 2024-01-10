@@ -1,0 +1,20 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "typescript.format.enable": false,
+    "prettier.tabWidth": 2,
+    "prettier.configPath": ".prettierrc",
+    "editor.formatOnSave": true,
+    "prettier.singleQuote": true,
+    "prettier.trailingComma": "all",
+    "prettier.printWidth": 150,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "extensions": {
+    "recommendations": ["esbenp.prettier-vscode", "waderyan.gitblame", "ms-vsliveshare.vsliveshare"]
+  }
+}
