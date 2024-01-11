@@ -16,6 +16,13 @@ window.addEventListener('resize', () => {
 		const isOversize =  (landscapeAspectRatio > 16 / 9);
 		appContainer.classList.toggle('reverse', isOversize);
 	}
+
+	setTimeout(() => {
+		const {height = 0, width = 0} = appContainer?.getBoundingClientRect() || {};
+
+		document.documentElement.style.setProperty('--container-height', `${height}px`);
+		document.documentElement.style.setProperty('--container-width', `${width}px`);
+	}, 0);
 });
 
 window.addEventListener("load", async () => {

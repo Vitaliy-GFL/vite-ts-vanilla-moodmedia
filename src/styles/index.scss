@@ -1,19 +1,31 @@
 @use "sass:math";
 
+
+$base-height: 1920px;
+$base-width: 1080px;
+
 @function get-vh($object) {
-  $baseHeight: 1080;
   $baseUnit: 1vh;
-  $vh: ($baseHeight * 0.01) * 1px;
+  $vh: ($base-height * 0.01) * 1px;
 
   @return math.div($object, $vh) * $baseUnit;
 }
 
 @function get-vw($object) {
-  $baseHeight: 1920;
   $baseUnit: 1vw;
-  $vh: ($baseHeight * 0.01) * 1px;
+  $vh: ($base-width * 0.01) * 1px;
 
   @return math.div($object, $vh) * $baseUnit;
+}
+
+@function get-size($size) {
+  $px: math.div($size, $base-width);
+  @return calc(var(--container-width) * $px);
+}
+
+:root {
+  --container-height: #{$base-height};
+  --container-width: #{$base-width};
 }
 
 body {
@@ -26,6 +38,7 @@ body {
   overflow: hidden;
   background: #ccc;
   margin: 0 auto;
+  font-size: get-size(32px);
 
  &.portrait {
     height: 100vh;
