@@ -10,15 +10,15 @@
 			#preview {
 				position: absolute;
 				left: 0;
-				top: 0;
-				height: 100vh;
+				top: 50%;
+				transform: translateY(-50%);
 				width: 100vw;
 				z-index: 10000;
 			}
 		</style>
 	</head>
 	<body>
-		<img id="preview" src="./preview.png"/>
+		<img id="preview" src="./preview.jpeg"/>
 		<div id="app" class="app-container portrait"></div>
 		<script type="module" src="./src/main.ts"></script>
 	</body>

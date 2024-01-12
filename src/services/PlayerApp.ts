@@ -1,25 +1,25 @@
-import { PlayerApplicationI } from "@/types/PlayerApp";
+import PlayerApplicationI from '@/types/PlayerAppI';
 
 class PlayerAppService implements PlayerApplicationI {
-	openHomeApp() {
-		window.Loader.openHomeApp();
-	}
+  openHomeApp() {
+    window.Loader.openHomeApp();
+  }
 
-	openApp(applicationId: string) {
-		window.Loader.openApp(applicationId);
-	}
+  openApp(applicationId: string) {
+    window.Loader.openApp(applicationId);
+  }
 
-	openDiagnosticsApp() {
-		window.Loader.openDiagnosticsApp();
-	}
+  openDiagnosticsApp() {
+    window.Loader.openDiagnosticsApp();
+  }
 
-	openSettingsApp(params: Record<string, string>) {
-		window.Loader.openSettingsApp(params);
-	}
+  openSettingsApp(params: Record<string, string>) {
+    window.Loader.openSettingsApp(params);
+  }
 
-	closePlaybackApp() {
-		window.Loader.closePlaybackApp();
-	}
+  closePlaybackApp() {
+    window.Loader.closePlaybackApp();
+  }
 }
 
 export default PlayerAppService;

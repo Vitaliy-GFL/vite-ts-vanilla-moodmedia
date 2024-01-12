@@ -1,57 +1,55 @@
 import './styles/index.scss';
 
-window.addEventListener('resize', () => {
-	const appContainer = getElement('.app-container');
-	const windowHeight = (window.outerHeight);
-	const windowWidth =  (window.outerWidth);
-	const portraitAspectRatio = windowHeight / windowWidth;
-	const landscapeAspectRatio = windowWidth / windowHeight;
+// remove this listener if you are planning to use viewport dimensions
+((docElement) => {
+  window.addEventListener('resize', () => {
+    const appContainer = getElement('.app-container');
+    const windowHeight = window.outerHeight;
+    const windowWidth = window.outerWidth;
+    const portraitAspectRatio = windowHeight / windowWidth;
+    const landscapeAspectRatio = windowWidth / windowHeight;
 
-	if (appContainer?.classList.contains('portrait')) {
-		const isOversize =  (portraitAspectRatio > 16 / 9);		
-		appContainer.classList.toggle('reverse', isOversize);
-	}
+    if (appContainer?.classList.contains('portrait')) {
+      const isOversize = portraitAspectRatio > 16 / 9;
+      appContainer.classList.toggle('reverse', isOversize);
+    }
 
-	if (appContainer?.classList.contains('landscape')) {
-		const isOversize =  (landscapeAspectRatio > 16 / 9);
-		appContainer.classList.toggle('reverse', isOversize);
-	}
+    if (appContainer?.classList.contains('landscape')) {
+      const isOversize = landscapeAspectRatio > 16 / 9;
+      appContainer.classList.toggle('reverse', isOversize);
+    }
 
-	setTimeout(() => {
-		const {height = 0, width = 0} = appContainer?.getBoundingClientRect() || {};
+    setTimeout(() => {
+      const { height = 0, width = 0 } = appContainer?.getBoundingClientRect() || {};
+      docElement.style.setProperty('--container-height', `${height}px`);
+      docElement.style.setProperty('--container-width', `${width}px`);
+    }, 0);
+  });
 
-		document.documentElement.style.setProperty('--container-height', `${height}px`);
-		document.documentElement.style.setProperty('--container-width', `${width}px`);
-	}, 0);
-});
+  window.dispatchEvent(new Event('resize'));
+})(document.documentElement);
 
-window.addEventListener("load", async () => {
-	console.log("WINDOW LOADED");
-	const appContainer = getElement("#app");
-	const components = await window.Loader.getComponents();
+window.addEventListener('load', async () => {
+  const appContainer = getElement('#app');
+  const components = await window.Loader.getComponents();
 
-	// to wait for template start (autoPlay is true or player issues play command)
-	window.Loader.isStarted().then(() => {
-		console.log(components);
+  // to wait for template start (autoPlay is true or player issues play command)
+  window.Loader.isStarted().then(() => {
+    console.log(components);
 
-		if (!appContainer) return;
+    if (!appContainer) return;
 
-		const preElt = document.createElement("pre");
-		appContainer.appendChild(preElt);
-		preElt.textContent = JSON.stringify(components, null, "  ");
-	});
+    const preElt = document.createElement('pre');
+    appContainer.appendChild(preElt);
+    preElt.textContent = JSON.stringify(components, null, '  ');
+  });
 
-	// to notify player that the template is ready
-	window.Loader.ready();
-	getElement('#preview')?.remove();
+  // to notify player that the template is ready
+  window.Loader.ready();
+  getElement('#preview')?.remove();
 });
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getElement(selector: string, context: HTMLElement | Document = document) {
-	return context.querySelector(selector);
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function getElements(selector: string, context: HTMLElement | Document = document) {
-	return context.querySelectorAll(selector);
+  return context.querySelector(selector);
 }

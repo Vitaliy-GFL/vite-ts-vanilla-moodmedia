@@ -1,5 +1,4 @@
-@use "sass:math";
-
+@use 'sass:math';
 
 $base-height: 1920px;
 $base-width: 1080px;
@@ -40,7 +39,7 @@ body {
   margin: 0 auto;
   font-size: get-size(32px);
 
- &.portrait {
+  &.portrait {
     height: 100vh;
     width: calc(100vh / 16 * 9);
     &.reverse {
