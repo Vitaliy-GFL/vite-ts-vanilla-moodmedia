@@ -1,25 +1,31 @@
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<script src="./node_modules/mtemplate-loader/release/js/es6-shim.min.js" type="module"></script>
-		<script src="./node_modules/mtemplate-loader/release/js/template-loader.js" type="module"></script>
-		<title>Vite + TS + ESlint + Prettier!</title>
-		<style>
-			#preview {
-				position: absolute;
-				left: 0;
-				top: 50%;
-				transform: translateY(-50%);
-				width: 100vw;
-				z-index: 10000;
-			}
-		</style>
-	</head>
-	<body>
-		<img id="preview" src="./preview.jpeg"/>
-		<div id="app" class="app-container portrait"></div>
-		<script type="module" src="./src/main.ts"></script>
-	</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="./node_modules/mtemplate-loader/release/js/es6-shim.min.js" type="module"></script>
+    <script src="./node_modules/mtemplate-loader/release/js/template-loader.js" type="module"></script>
+    <title>Vite + TS + ESlint + Prettier!</title>
+    <style>
+      #preview {
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 100vw;
+        z-index: 10000;
+      }
+    </style>
+  </head>
+  <body>
+    <img id="preview" src="./preview.jpeg" />
+    <div id="app" class="app-container portrait"></div>
+    <div id="debugger" class="hidden">
+      <div class="header">
+        <div class="collapse up">&lsaquo;</div>
+      </div>
+      <div class="content"></div>
+    </div>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
 </html>

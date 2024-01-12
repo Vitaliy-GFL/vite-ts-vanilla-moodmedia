@@ -12,3 +12,17 @@ export const createGlobalFn = <T>(name: string, fn: T): T => {
   // @ts-expect-error
   return window[name];
 };
+
+type Param = {
+  name: string;
+  value: unknown;
+};
+
+type Component = {
+  name: string;
+  params: Array<Param>;
+};
+export const getMFparam = <T>(components: Array<Component>, name: string, param: string): T | null => {
+  const result = components.filter((c) => c.name === name)[0]?.params.filter((p) => p.name === param)[0];
+  return result ? (result.value as T) : null;
+};
