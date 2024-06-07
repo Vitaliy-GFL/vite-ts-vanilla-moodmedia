@@ -6,8 +6,8 @@ import { getMFparam } from './utils';
 ((docElement) => {
   window.addEventListener('resize', () => {
     const appContainer = getElement('.app-container');
-    const windowHeight = window.outerHeight;
-    const windowWidth = window.outerWidth;
+    const windowHeight = window.innerHeight;
+    const windowWidth = window.innerWidth;
     const portraitAspectRatio = windowHeight / windowWidth;
     const landscapeAspectRatio = windowWidth / windowHeight;
 
