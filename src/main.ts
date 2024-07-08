@@ -1,11 +1,11 @@
 import './styles/index.scss';
 import Debugger from './services/Debugger';
-import { getMFparam } from './utils';
+import { getElement, getMFparam } from './utils';
 
 // remove this listener if you are planning to use viewport dimensions
 ((docElement) => {
   window.addEventListener('resize', () => {
-    const appContainer = getElement('.app-container');
+    const appContainer = getElement<HTMLDivElement>('.app-container');
     const windowHeight = window.innerHeight;
     const windowWidth = window.innerWidth;
     const portraitAspectRatio = windowHeight / windowWidth;
@@ -32,13 +32,13 @@ import { getMFparam } from './utils';
 })(document.documentElement);
 
 window.addEventListener('load', async () => {
-  const appContainer = getElement('#app');
+  const appContainer = getElement<HTMLDivElement>('#app');
   const components = await window.Loader.getComponents();
   const getParam = <T>(name: string, param: string) => getMFparam<T>(components, name, param);
 
   // to wait for template start (autoPlay is true or player issues play command)
   window.Loader.isStarted().then(() => {
-    console.log(components);
+    console.log('COMPONENTS:', components);
     if (getParam<boolean>('debug', 'enabled')) {
       new Debugger();
     }
@@ -52,10 +52,5 @@ window.addEventListener('load', async () => {
 
   // to notify player that the template is ready
   window.Loader.ready();
-  getElement('#preview')?.remove();
+  getElement<HTMLImageElement>('#preview')?.remove();
 });
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function getElement(selector: string, context: HTMLElement | Document = document) {
-  return context.querySelector(selector);
-}

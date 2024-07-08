@@ -22,7 +22,13 @@ type Component = {
   name: string;
   params: Array<Param>;
 };
+
 export const getMFparam = <T>(components: Array<Component>, name: string, param: string): T | null => {
   const result = components.filter((c) => c.name === name)[0]?.params.filter((p) => p.name === param)[0];
   return result ? (result.value as T) : null;
 };
+
+export function getElement<T>(selector: string, context: HTMLElement | Document = document) {
+  const element = context.querySelector(selector);
+  return element as T || null;
+}
