@@ -18,7 +18,7 @@ type Param = {
   value: unknown;
 };
 
-type Component = {
+export type Component = {
   name: string;
   params: Array<Param>;
 };
@@ -28,7 +28,6 @@ export const getMFparam = <T>(components: Array<Component>, name: string, param:
   return result ? (result.value as T) : null;
 };
 
-export function getElement<T>(selector: string, context: HTMLElement | Document = document) {
-  const element = context.querySelector(selector);
-  return element as T || null;
+export function getElement<T extends Element>(selector: string, context: HTMLElement | Document = document) {
+  return context.querySelector<T>(selector);
 }

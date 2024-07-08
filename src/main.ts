@@ -1,6 +1,6 @@
 import './styles/index.scss';
 import Debugger from './services/Debugger';
-import { getElement, getMFparam } from './utils';
+import { Component, getElement, getMFparam } from './utils';
 
 // remove this listener if you are planning to use viewport dimensions
 ((docElement) => {
@@ -33,8 +33,8 @@ import { getElement, getMFparam } from './utils';
 
 window.addEventListener('load', async () => {
   const appContainer = getElement<HTMLDivElement>('#app');
-  const components = await window.Loader.getComponents();
-  const getParam = <T>(name: string, param: string) => getMFparam<T>(components, name, param);
+  const components = await window.Loader.getComponents<Component[]>();
+  const getParam = <T>(name: string, param: string) => getMFparam<T>(components as Component[], name, param);
 
   // to wait for template start (autoPlay is true or player issues play command)
   window.Loader.isStarted().then(() => {
