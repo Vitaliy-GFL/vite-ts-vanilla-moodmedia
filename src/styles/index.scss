@@ -51,6 +51,7 @@ body {
   }
 
   &.landscape {
+    margin-top: calc(50vh - calc(50vw / 16 * 9));
     height: calc(100vw / 16 * 9);
     width: 100vw;
     &.reverse {
