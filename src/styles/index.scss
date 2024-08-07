@@ -55,6 +55,7 @@ body {
     height: calc(100vw / 16 * 9);
     width: 100vw;
     &.reverse {
+      margin-top: 0;
       height: 100vh;
       width: calc(100vh / 9 * 16);
     }
