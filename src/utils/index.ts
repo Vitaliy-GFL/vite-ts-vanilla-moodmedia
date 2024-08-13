@@ -31,3 +31,8 @@ export const getMFparam = <T>(components: Array<Component>, name: string, param:
 export function getElement<T extends Element>(selector: string, context: HTMLElement | Document = document) {
   return context.querySelector<T>(selector);
 }
+
+export function getElements<T extends Element>(selector: string, context: HTMLElement | Document = document) {
+  const elements = context.querySelectorAll<T>(selector);
+  return Array.from(elements);
+}
