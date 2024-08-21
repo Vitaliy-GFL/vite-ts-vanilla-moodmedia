@@ -1,0 +1,4 @@
+{
+	"/assets": ["dist/assets"],
+	"/images": ["dist/images"]
+}

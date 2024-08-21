@@ -1,0 +1,68 @@
+@use 'sass:math';
+
+// @import './debugger.scss';
+
+$base-height: 1080px;
+$base-width: 1920px;
+
+@function get-vh($object) {
+  $baseUnit: 1vh;
+  $vh: ($base-height * 0.01) * 1px;
+
+  @return math.div($object, $vh) * $baseUnit;
+}
+
+@function get-vw($object) {
+  $baseUnit: 1vw;
+  $vh: ($base-width * 0.01) * 1px;
+
+  @return math.div($object, $vh) * $baseUnit;
+}
+
+@function get-size($size) {
+  $px: math.div($size, $base-width);
+  @return calc(var(--container-width) * $px);
+}
+
+:root {
+  --container-height: #{$base-height};
+  --container-width: #{$base-width};
+}
+
+html, body {
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+.app-container {
+  position: relative;
+  overflow: hidden;
+  background: #ccc;
+  margin: 0 auto;
+  font-size: get-size(32px);
+
+  &.portrait {
+    height: 100vh;
+    width: calc(100vh / 16 * 9);
+    &.reverse {
+      height: calc(100vw / 9 * 16);
+      width: 100vw;
+    }
+  }
+
+  &.landscape {
+    margin-top: calc(50vh - calc(50vw / 16 * 9));
+    height: calc(100vw / 16 * 9);
+    width: 100vw;
+    &.reverse {
+      margin-top: 0;
+      height: 100vh;
+      width: calc(100vh / 9 * 16);
+    }
+  }
+}
+
+@import "./debugger.scss";

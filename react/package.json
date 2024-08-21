@@ -1,0 +1,40 @@
+{
+  "name": "vite-react-ts-moodmedia",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "build": "npm run lint && tsc -b && vite build && mv dist/main.html dist/index.html && cp public/mframe.json mframe.json && npm run compile",
+    "build:windows": "npm run lint && tsc -b && vite build && move dist\\main.html dist\\index.html && copy public\\mframe.json mframe.json && npm run compile:windows",
+    "build:simple": "tsc -b && vite build",
+    "compile": "cp dist/index.html index.html  && mtemplate compile && rm mframe.json index.html",
+    "compile:windows": "copy dist\\index.html  index.html  && mtemplate compile && del mframe.json index.html"
+  },
+  "dependencies": {
+    "@types/node": "^22.3.0",
+    "mtemplate-loader": "^2.0.40",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.8.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-legacy": "^5.4.1",
+    "@vitejs/plugin-react": "^4.3.1",
+    "eslint": "^9.8.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react-hooks": "^5.1.0-rc.0",
+    "eslint-plugin-react-refresh": "^0.4.9",
+    "globals": "^15.9.0",
+    "mtemplate": "^1.0.7",
+    "prettier": "^3.3.3",
+    "sass": "^1.77.8",
+    "typescript": "^5.5.3",
+    "typescript-eslint": "^8.0.0",
+    "vite": "^5.4.0"
+  }
+}
