@@ -1,50 +1,49 @@
-# React + TypeScript + Vite
+# Mvision Template
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React TS template support [Typescript](https://www.typescriptlang.org), [ESLint](https://eslint.org), [Prettier](https://prettier.io) and based on [Vite](https://vitejs.dev) bundler.
 
-Currently, two official plugins are available:
+## Instalation
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
-
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```
+$ npx degit Vitaliy-GFL/vite-ts-vanilla-moodmedia/react project-name
+$ cd project-name
+$ npm install
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+## Develop
+```
+$ vite dev
+```
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+## Build
+For OS Windows:
+```
+$ npm run build:windows
+```
+For others:
+```
+$ npm run build
+```
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+## Other commands
+1. Run ESLint to find problems in code
+```
+$ npm run lint:style //run checking errors
+```
+2. Run prettier for reformatting code
+```
+$ npm run lint:formatting
+```
+3. Run both actions above in 1 conmmand
+```
+$ npm run lint
+```
+
+Create *.zip file with previously builded project files.
+```
+//for Windows OS
+$ npm run compile:windows
+
+//for other OS
+$ npm run compile
 ```

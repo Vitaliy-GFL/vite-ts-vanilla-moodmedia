@@ -5,7 +5,7 @@ Vanilla JS/TS template support [Typescript](https://www.typescriptlang.org), [ES
 ## Instalation
 
 ```
-$ npx degit Vitaliy-GFL/vite-ts-vanilla-moodmedia project-name
+$ npx degit Vitaliy-GFL/vite-ts-vanilla-moodmedia/vanilla project-name
 $ cd project-name
 $ npm install
 ```
