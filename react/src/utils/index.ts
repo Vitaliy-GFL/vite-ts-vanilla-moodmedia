@@ -36,3 +36,11 @@ export function getElements<T extends Element>(selector: string, context: HTMLEl
   const elements = context.querySelectorAll<T>(selector);
   return Array.from(elements);
 }
+
+export function adoptFont(fontName: string): string {
+  return fontName.replace(/\s+/g, '').replace(/\([^)]+\)$/, '');
+}
+
+export function getSize(size: number) {
+  return `calc(var(--container-width) * ${size / 1920})`;
+}
