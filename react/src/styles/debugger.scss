@@ -17,6 +17,8 @@
   .drag-area {
     cursor: move;
     position: relative;
+    display: flex;
+    justify-content: space-between;
     color: white;
     font-size: get-size(24px);
     text-align: center;
@@ -26,14 +28,14 @@
     width: 100%;
     user-select: none;
 
+    >div {
+      padding: 0 8px;
+    }
+
     .clear {
       cursor: pointer;
-      position: absolute;
       font-size: 75%;
-      top: 0;
-      right: 0;
       height: 100%;
-      width: 50px;
     }
   }
 

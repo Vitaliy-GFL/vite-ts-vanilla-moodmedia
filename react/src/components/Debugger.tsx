@@ -134,7 +134,8 @@ const Debugger: FC = memo(() => {
   return (
     <div ref={modalRef} className="debug-modal">
       <div className="drag-area">
-        Logs{' '}
+      <div>v{__APP_VERSION__}</div>
+        <div>Logs</div>
         <div
           className="clear"
           onClick={(e) => {
