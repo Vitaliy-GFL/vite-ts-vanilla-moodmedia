@@ -1,3 +1,5 @@
+@use './functions.scss';
+
 .debug-modal {
   position: absolute;
   font-family: monospace;
@@ -20,11 +22,11 @@
     display: flex;
     justify-content: space-between;
     color: white;
-    font-size: get-size(24px);
+    font-size: functions.get-size(24px);
     text-align: center;
     background-color: rgba(0, 0, 0, 0.75);
-    line-height: get-size(48px);
-    height: get-size(50px);
+    line-height: functions.get-size(48px);
+    height: functions.get-size(50px);
     width: 100%;
     user-select: none;
 

@@ -1,32 +1,9 @@
-@use 'sass:math';
-
-// @import './debugger.scss';
-
-$base-height: 1080px;
-$base-width: 1920px;
-
-@function get-vh($object) {
-  $baseUnit: 1vh;
-  $vh: ($base-height * 0.01) * 1px;
-
-  @return math.div($object, $vh) * $baseUnit;
-}
-
-@function get-vw($object) {
-  $baseUnit: 1vw;
-  $vh: ($base-width * 0.01) * 1px;
-
-  @return math.div($object, $vh) * $baseUnit;
-}
-
-@function get-size($size) {
-  $px: math.div($size, $base-width);
-  @return calc(var(--container-width) * $px);
-}
+@use "sass:meta";
+@use './functions.scss';
 
 :root {
-  --container-height: #{$base-height};
-  --container-width: #{$base-width};
+  --container-height: #{functions.$base-height};
+  --container-width: #{functions.$base-width};
 }
 
 html, body {
@@ -42,7 +19,7 @@ html, body {
   overflow: hidden;
   background: #ccc;
   margin: 0 auto;
-  font-size: get-size(32px);
+  font-size: functions.get-size(32px);
 
   &.portrait {
     height: 100vh;
@@ -65,4 +42,4 @@ html, body {
   }
 }
 
-@import "./debugger.scss";
+@include meta.load-css("debugger.scss");
