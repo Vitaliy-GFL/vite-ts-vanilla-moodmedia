@@ -1,6 +1,6 @@
 import { FC, memo, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
-import { MframeContexts } from '@/App';
+import MframeContexts from '@/context/mfarme';
 import Logger from '@/components/Logger';
 
 const WINDOW_MIN_HEIGHT = 80;
