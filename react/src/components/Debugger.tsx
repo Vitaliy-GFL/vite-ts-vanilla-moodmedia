@@ -29,6 +29,11 @@ const Debugger: FC = memo(() => {
       grab = false;
     });
 
+    document?.addEventListener('touchend', () => {
+      resizeMode = false;
+      grab = false;
+    });
+
     // drag logic
     grabElt?.addEventListener('mousedown', (e) => {
       grab = true;
