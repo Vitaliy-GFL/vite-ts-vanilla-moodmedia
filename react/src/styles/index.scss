@@ -19,7 +19,7 @@ html, body {
   overflow: hidden;
   background: #ccc;
   margin: 0 auto;
-  font-size: functions.get-size(32px);
+  font-size: functions.get-size(32);
 
   &.portrait {
     height: 100vh;

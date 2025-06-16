@@ -1,23 +1,16 @@
 @use 'sass:math';
 
-$base-height: 1080px;
-$base-width: 1920px;
+$base-height: 1080 !default;
+$base-width: 1920 !default;
 
-@function get-vh($object) {
-  $baseUnit: 1vh;
-  $vh: ($base-height * 0.01) * 1px;
-
-  @return math.div($object, $vh) * $baseUnit;
+@function get-vh($px, $viewport: $base-height) {
+  @return #{calc($px / $viewport) * 100}vh;
 }
 
-@function get-vw($object) {
-  $baseUnit: 1vw;
-  $vh: ($base-width * 0.01) * 1px;
-
-  @return math.div($object, $vh) * $baseUnit;
+@function get-vw($px, $viewport: $base-width) {
+  @return #{calc($px / $viewport) * 100}vw;
 }
 
-@function get-size($size) {
-  $px: math.div($size, $base-width);
-  @return calc(var(--container-width) * $px);
+@function get-size($px, $viewport: $base-width) {
+  @return #{calc($px / $viewport) * 100}vw;
 }
