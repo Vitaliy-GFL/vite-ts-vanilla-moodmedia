@@ -22,11 +22,11 @@
     display: flex;
     justify-content: space-between;
     color: white;
-    font-size: functions.get-size(24px);
+    font-size: functions.get-size(24);
     text-align: center;
     background-color: rgba(0, 0, 0, 0.75);
-    line-height: functions.get-size(48px);
-    height: functions.get-size(50px);
+    line-height: functions.get-size(48);
+    height: functions.get-size(50);
     width: 100%;
     user-select: none;
 
