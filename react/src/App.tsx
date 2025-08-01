@@ -1,9 +1,9 @@
 import { useCallback } from 'react';
 import { createPortal } from 'react-dom';
 
-import { Component, getMFparam } from './utils';
-import MframeContexts from './context/mfarme';
 import Debugger from './components/Debugger';
+import MframeContexts from './context/mframe';
+import { Component, getMFparam } from './utils';
 
 type AppProps = {
   components: Component[];

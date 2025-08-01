@@ -1,7 +1,7 @@
 import { FC, memo, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
-import MframeContexts from '@/context/mfarme';
 import Logger from '@/components/Logger';
+import MframeContexts from '@/context/mframe';
 
 const WINDOW_MIN_HEIGHT = 80;
 const WINDOW_MIN_WIDTH = 250;
@@ -139,7 +139,7 @@ const Debugger: FC = memo(() => {
   return (
     <div ref={modalRef} className="debug-modal">
       <div className="drag-area">
-      <div>v{__APP_VERSION__}</div>
+        <div>v{__APP_VERSION__}</div>
         <div>Logs</div>
         <div
           className="clear"
