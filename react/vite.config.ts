@@ -1,17 +1,15 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import legacy from '@vitejs/plugin-legacy';
+import { resolve } from 'path';
 
-import pck from "./package.json";
+import pck from './package.json';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [
-    legacy({ renderModernChunks: false, targets: ['chrome 50'] }),
-    react(),
-  ],
+  plugins: [legacy({ renderModernChunks: false, targets: ['chrome 50'] }), react()],
   define: {
-    __APP_VERSION__: `"${pck.version}"`
+    __APP_VERSION__: `"${pck.version}"`,
   },
   base: './',
   resolve: {
@@ -27,7 +25,7 @@ export default defineConfig({
     sourcemap: true, // for easier debugging on devices
     rollupOptions: {
       input: {
-        index: new URL('./main.html', import.meta.url).pathname,
+        index: resolve(__dirname, 'main.html'),
       },
     },
   },
