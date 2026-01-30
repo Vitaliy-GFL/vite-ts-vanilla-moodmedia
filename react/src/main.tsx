@@ -5,7 +5,11 @@ import { createRoot } from 'react-dom/client';
 
 import '@/styles/index.scss';
 import App from './App.tsx';
+import ConsoleInterceptor from './services/ConsoleInterceptor';
 import { Component, getElement } from './utils/index.ts';
+
+// Intercept console methods early to capture all logs
+ConsoleInterceptor.intercept();
 
 // remove this listener if you are planning to use viewport dimensions
 ((docElement) => {
