@@ -38,11 +38,11 @@ class P2PService {
     window.Loader.sendChannelMessage(this.device, this.channel, JSON.stringify(message));
   }
 
-  getChanne() {
+  getChannel() {
     return this.channel;
   }
 
-  geDevice() {
+  getDevice() {
     return this.device;
   }
 }
