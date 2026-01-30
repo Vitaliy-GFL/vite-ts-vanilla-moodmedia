@@ -1,0 +1,87 @@
+---
+description: mframe.json — structure, usage, and how to add components/params
+globs: public/mframe.json, **/mframe.json, src/**/*.ts, src/**/*.tsx
+alwaysApply: false
+---
+
+# mframe.json
+
+Config for Harmony platform: all fields editable after template upload. Malformed JSON can break validation or Harmony. Edit/add components via Harmony “Edit Template” when supported by the template’s capabilities array.
+
+**Location:** `public/mframe.json`.
+
+## Top-level structure
+
+```json
+{
+  "components": [
+    /* array of component objects */
+  ]
+}
+```
+
+## Component object
+
+| Field    | Type   | Required | Notes                                                                                            |
+| -------- | ------ | -------- | ------------------------------------------------------------------------------------------------ |
+| `name`   | string | yes      | Unique ID, e.g. `myComponent0`. Not shown in Harmony UI — use `label`. Duplicates break Harmony. |
+| `locked` | bool   | yes      | If true, component is hidden in Visuals app (not in HTML Editor).                                |
+| `label`  | object | yes      | Localized name + tooltip; key = language code (e.g. `en-US`).                                    |
+| `params` | array  | no       | List of parameter objects (main editable data).                                                  |
+
+### label shape
+
+```json
+"label": {
+  "en-US": {
+    "value": "Display name in Harmony",
+    "tooltip": "Optional tooltip / formatting hint"
+  }
+}
+```
+
+## Param object
+
+| Field         | Type   | Required | Notes                                                                                                                                                                                                                                     |
+| ------------- | ------ | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`        | string | yes      | Unique within component. Duplicates break Harmony.                                                                                                                                                                                        |
+| `type`        | string | yes      | One of: `string`, `bool`, `int`, `color`, `array`, `componentArray`, `feed`, `intRange`, `lang`, `imageReference`, `mediaReference`, `multiselect`, `rangedInt`, `select`, `fontSelect`, `fontSize`, `images`, `radio`, `videoReference`. |
+| `value`       | any    | no       | Default value; type must match `type`.                                                                                                                                                                                                    |
+| `locked`      | bool   | no       | Hide in Visuals app.                                                                                                                                                                                                                      |
+| `label`       | object | no       | Same shape as component `label`.                                                                                                                                                                                                          |
+| `typeOptions` | object | no       | Rendering/constraints: `renderType`, `values`, `icons`, etc.                                                                                                                                                                              |
+
+### typeOptions (common)
+
+- **renderType:** e.g. `btngroup`, `slider`, `fontSelect`, `limited` (strings). Affects control in HTML Editor.
+- **values:** array of allowed values (for `select`, radio, etc.).
+- **icons:** for `select` + `btngroup` — map value → CSS class for icon: `{ "<value>": "icon-css-class" }`.
+
+### Advanced string (multiline / max length)
+
+1. Set param `type: "string"` and in `typeOptions` set `renderType: "limited"`.
+2. **Multiline:** add a sibling param `name: "multiline"`, `type: "bool"`, `value: true` (can `locked: true` to hide in Harmony).
+3. **Max length:** add sibling param `name: "maxCharacters"`, `type: "int"`, `value: <number>`; in its `typeOptions` set `renderType: "maxCharacters"`. Can `locked: true`.  
+   Note: one `multiline`/`maxCharacters` applies to all `limited` string params in that component.
+
+## How to add something
+
+### New component
+
+1. Add an object to `components` array.
+2. Set unique `name` (e.g. `feature0`, `settings1`).
+3. Set `locked` and `label` (required).
+4. Add `params` array (can be empty).
+
+### New param to existing component
+
+1. Find the component in `components` by `name`.
+2. Append to its `params` array an object with at least `name` (unique in component) and `type`.
+3. Set `value` for default; add `label`, `typeOptions`, `locked` as needed.
+
+## Validation rules
+
+- No duplicate component `name`.
+- No duplicate param `name` within the same component.
+- `type` must be one of the supported types.
+- Keep structure valid JSON; test in Harmony or with template loader when possible.

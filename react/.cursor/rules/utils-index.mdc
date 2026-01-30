@@ -1,0 +1,51 @@
+---
+description: src/utils/index.ts — function descriptions and when to use them
+globs: src/utils/index.ts, src/**/*.ts, src/**/*.tsx
+alwaysApply: false
+---
+
+# Utils (src/utils/index.ts)
+
+Use functions from `src/utils/index.ts` instead of custom implementations when the use case below applies.
+
+## createGlobalFn\<T\>(name, fn)
+
+Registers a function on `window` under the given name (with `name` on the function itself).
+
+- **When to use:** when you need to expose an API globally for mframe/template scripts or external callers (e.g. player API for templates).
+- **When not to use:** for internal code; prefer imports.
+
+## getMFparam\<T\>(components, name, param)
+
+Returns a parameter value from the components array by component name and parameter name.
+
+- **When to use:** reading config from mframe/template (e.g. data from `mframe.json` / components from `Component[]`). Returns `T | null`.
+- **When not to use:** for arbitrary objects; expects structure `{ name, params: { name, value }[] }`.
+
+## getElement\<T\>(selector, context?)
+
+Returns a single element by CSS selector. `context` defaults to `document`.
+
+- **When to use:** instead of `document.querySelector` when you need scoped lookup (`context`) or consistent typing `T extends Element`.
+- **When not to use:** when you need multiple elements — use `getElements`.
+
+## getElements\<T\>(selector, context?)
+
+Returns an array of elements by selector (equivalent to `querySelectorAll` + `Array.from`).
+
+- **When to use:** when you need an actual array (`.map`, `.filter`, `.forEach`) or scoped lookup in `context`; type `T extends Element`.
+- **When not to use:** when a single element is enough — use `getElement`.
+
+## adoptFont(fontName)
+
+Strips spaces and parenthesized suffix from the font name (e.g. `"My Font (Italic)"` → `"MyFont"`).
+
+- **When to use:** before passing the font name to CSS (`font-family`), Font Face API or other APIs that expect a “clean” name without spaces/variants.
+- **When not to use:** for displaying the font name to the user.
+
+## getSize(size)
+
+Returns the CSS string `calc(var(--container-width) * (size / 1920))`.
+
+- **When to use:** for sizes (width, height, padding, font-size, etc.) that should scale with container width; base is 1920px.
+- **When not to use:** for fixed pixel values or when `--container-width` is not used.
