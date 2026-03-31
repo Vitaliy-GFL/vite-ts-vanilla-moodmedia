@@ -6,9 +6,8 @@ import { defineConfig } from 'eslint/config';
 import tseslint from 'typescript-eslint';
 import eslintConfigPrettier from 'eslint-config-prettier';
 
-export default defineConfig(js.configs.recommended, ...tseslint.configs.recommended, eslintConfigPrettier, {
+export default defineConfig({ ignores: ['dist/**'] }, js.configs.recommended, ...tseslint.configs.recommended, eslintConfigPrettier, {
   files: ['**/*.{ts,tsx}'],
-  ignores: ['dist'],
   languageOptions: {
     ecmaVersion: 2025,
     globals: globals.browser,

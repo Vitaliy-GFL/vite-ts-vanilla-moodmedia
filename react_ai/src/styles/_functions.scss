@@ -1,0 +1,22 @@
+// $design-width and $design-height are injected by Vite from src/config/design.ts
+// via css.preprocessorOptions.scss.additionalData in vite.config.ts
+
+// Convert pixels to vw relative to $design-width
+@function px($value) {
+  @return calc($value / $design-width * 100vw);
+}
+
+// Convert pixels to vh relative to $design-height
+@function pxh($value) {
+  @return calc($value / $design-height * 100vh);
+}
+
+// Font size based on vh (scales with height)
+@function font($value) {
+  @return calc($value / $design-height * 100vh);
+}
+
+// Font size based on vw (scales with width)
+@function fontw($value) {
+  @return calc($value / $design-width * 100vw);
+}

@@ -1,0 +1,73 @@
+import { useEffect } from "react";
+
+import AspectRatioContainer from "@/components/AspectRatioContainer";
+import DebugModal from "@/components/DebugModal";
+import { DESIGN_WIDTH, DESIGN_HEIGHT } from "@/config/design";
+import { initTemplate, signalReady, waitForStart, getDuration } from "@/services/template-loader";
+import { useTemplateStore } from "@/store/templateStore";
+
+import "./styles/main.scss";
+import { px } from "./utils/px";
+
+function App() {
+  const { isStarted, error, setComponents, setStarted, setReady, setDuration, setError } = useTemplateStore();
+  const debugEnabled = useTemplateStore((s) => s.getParam<boolean>("debug", "enabled"));
+
+  useEffect(() => {
+    async function bootstrap() {
+      try {
+        const components = await initTemplate();
+        setComponents(components);
+
+        setDuration(getDuration());
+        signalReady();
+        setReady(true);
+
+        await waitForStart();
+        setStarted(true);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.error("Template init error:", message);
+        setError("Failed to load template configuration: " + message);
+      }
+    }
+
+    if (window.Loader) {
+      bootstrap();
+
+      window.mvTemplate = {
+        setComponents: (components) => {
+          window.Loader.setComponents(components);
+          setComponents(components);
+        },
+        render: () => {
+          /* re-render triggered via React state */
+        },
+      };
+    }
+  }, [setComponents, setStarted, setReady, setDuration, setError]);
+
+  if (error) {
+    return (
+      <div className="app app--error">
+        <p className="app__error-title">Template Error</p>
+        <p className="app__error-message">{error}</p>
+      </div>
+    );
+  }
+
+  if (!isStarted) {
+    return null;
+  }
+
+  return (
+    <div className="app">
+      <AspectRatioContainer ratio={DESIGN_WIDTH / DESIGN_HEIGHT}>
+        <h1 style={{ fontSize: px(40) }}>Harmony Template</h1>
+      </AspectRatioContainer>
+      {debugEnabled && <DebugModal />}
+    </div>
+  );
+}
+
+export default App;

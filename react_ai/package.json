@@ -1,0 +1,37 @@
+{
+  "name": "vite-react-ts-moodmedia-ai",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "lint": "oxlint .",
+    "fmt": "oxfmt -c .oxfmtrc.json src/",
+    "fmt:check": "oxfmt -c .oxfmtrc.json --check src/",
+    "preview": "vite preview",
+    "build": "npm run lint && tsc -b && vite build && mv dist/main.html dist/index.html && cp public/mframe.json mframe.json && npm run compile",
+    "build:windows": "npm run lint && tsc -b && vite build && move dist\\main.html dist\\index.html && copy public\\mframe.json mframe.json && npm run compile:windows",
+    "build:simple": "tsc -b && vite build",
+    "compile": "cp dist/index.html index.html && mtemplate compile && rm mframe.json index.html",
+    "compile:windows": "copy dist\\index.html index.html && mtemplate compile && del mframe.json index.html"
+  },
+  "dependencies": {
+    "mtemplate-loader": "^2.0.40",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.3.0",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-legacy": "^7.2.1",
+    "@vitejs/plugin-react": "^5.1.2",
+    "mtemplate": "^1.0.7",
+    "oxlint": "^1.0.0",
+    "oxfmt": "^0.42.0",
+    "sass": "^1.77.8",
+    "typescript": "^5.5.3",
+    "vite": "^7.3.1"
+  }
+}
