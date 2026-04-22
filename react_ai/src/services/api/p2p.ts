@@ -17,7 +17,6 @@ export class P2PClient {
     this.channelName = channelName;
     this.clientId = clientId;
     this.isServer = isServer;
-    void this.isServer;
 
     const callbackName = `__p2pCb_${++p2pCallbackCounter}`;
     // Computed property name sets callback.name === callbackName.
@@ -52,7 +51,53 @@ export class P2PClient {
     return Array.from(this.peers.values()).map((p) => ({ ...p }));
   }
 
-  private dispatch(_senderId: string, _payload: string): void {
-    // Filled in by the next task (dispatcher body: parse, echo filter, peer registry, auto-pong, fan-out).
+  private dispatch(_senderId: string, payload: string): void {
+    let envelope: Envelope;
+    try {
+      const parsed = JSON.parse(payload) as unknown;
+      if (
+        !parsed ||
+        typeof parsed !== "object" ||
+        typeof (parsed as Envelope).type !== "string" ||
+        typeof (parsed as Envelope).clientId !== "string"
+      ) {
+        console.warn("P2PClient: malformed message", payload);
+        return;
+      }
+      envelope = parsed as Envelope;
+    } catch {
+      console.warn("P2PClient: malformed message", payload);
+      return;
+    }
+
+    if (envelope.clientId === this.clientId) return;
+
+    if (this.isServer) {
+      const existing = this.peers.get(envelope.clientId);
+      if (existing) {
+        existing.online = true;
+        existing.lastSeen = Date.now();
+      } else {
+        this.peers.set(envelope.clientId, {
+          clientId: envelope.clientId,
+          online: true,
+          lastSeen: Date.now(),
+        });
+      }
+    }
+
+    if (envelope.type === "ping") {
+      this.emit("pong");
+    }
+
+    const list = this.handlers.get(envelope.type);
+    if (!list) return;
+    for (const handler of list) {
+      try {
+        handler(envelope.data, envelope.clientId);
+      } catch (err) {
+        console.error("P2PClient: handler threw", err);
+      }
+    }
   }
 }
