@@ -2,6 +2,7 @@ import { useRef, useState, useCallback, useEffect } from "react";
 
 import { useConsoleCapture, type LogLevel } from "@/hooks/useConsoleCapture";
 import { openDevTools } from "@/services/api/debug";
+import { P2PClient } from "@/services/api/p2p";
 
 import "./DebugModal.scss";
 
@@ -44,6 +45,18 @@ export default function DebugModal() {
   const offset = useRef<Position>({ x: 0, y: 0 });
 
   const logsEndRef = useRef<HTMLDivElement>(null);
+  const p2pRef = useRef<P2PClient | null>(null);
+
+  const onP2PTest = useCallback(() => {
+    if (!p2pRef.current) {
+      const client = new P2PClient("debug-loopback", "debug-self", false, true);
+      client.on("debug-test", (data, from) => {
+        console.log("[P2P] recv from", from, data);
+      });
+      p2pRef.current = client;
+    }
+    p2pRef.current.emit("debug-test", { ts: Date.now() });
+  }, []);
 
   useEffect(() => {
     if (!collapsed) {
@@ -139,6 +152,9 @@ export default function DebugModal() {
                 {lvl.toUpperCase()} ({counts[lvl]})
               </button>
             ))}
+            <button className="debug-modal__p2p-btn" onClick={onP2PTest} title="Send P2P loopback message">
+              P2P
+            </button>
           </div>
 
           <div className="debug-modal__logs">

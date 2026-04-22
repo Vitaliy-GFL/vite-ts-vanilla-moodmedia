@@ -89,6 +89,24 @@
     }
   }
 
+  &__p2p-btn {
+    margin-left: auto;
+    background: none;
+    border: 1px solid #555;
+    color: #4fc3f7;
+    padding: 2px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+
+    &:hover {
+      background: #2a2a2a;
+      color: #81d4fa;
+    }
+  }
+
   &__logs {
     flex: 1;
     overflow-y: auto;
