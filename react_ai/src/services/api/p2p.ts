@@ -31,6 +31,12 @@ export class P2PClient {
     getLoader().joinChannel(this.clientId, this.channelName, (window as never)[callbackName]);
 
     this.emit("ping");
+
+    if (this.isServer) {
+      const initialPingTime = Date.now();
+      setTimeout(() => this.evaluate(initialPingTime), 3_000);
+      setInterval(() => this.tick(), 60_000);
+    }
   }
 
   on(type: string, handler: MessageHandler): void {
@@ -49,6 +55,18 @@ export class P2PClient {
 
   getPeers(): Peer[] {
     return Array.from(this.peers.values()).map((p) => ({ ...p }));
+  }
+
+  private tick(): void {
+    const pingTime = Date.now();
+    this.emit("ping");
+    setTimeout(() => this.evaluate(pingTime), 3_000);
+  }
+
+  private evaluate(pingTime: number): void {
+    for (const peer of this.peers.values()) {
+      peer.online = peer.lastSeen >= pingTime;
+    }
   }
 
   private dispatch(_senderId: string, payload: string): void {
