@@ -24,7 +24,7 @@ src/
 │   └── api/
 │       ├── playback.ts         # Playback API (openMediaInZone, createCustomZone, etc.)
 │       ├── playlist.ts         # Playlist API (getPlaylistItems, setSchedules, mediaAvailability)
-│       ├── p2p.ts              # P2P API (joinChannel, sendChannelMessage)
+│       ├── p2p.ts              # P2P API (P2PClient class: pub/sub, auto ping/pong, server heartbeat)
 │       ├── analytics.ts        # Analytics API (getSessionId, createAnalyticsEvent)
 │       ├── player-params.ts    # Player parameters (getPlayerParameters)
 │       └── debug.ts            # Debug tools (openDevTools)
@@ -141,6 +141,23 @@ const value = useTemplateStore.getState().getParam<boolean>("debug", "enabled");
 API is available through wrappers in `src/services/api/`. Playback API works **only after `isStarted()`**.
 
 Callback functions for `playlist.ts` and `p2p.ts` are registered on the global scope via `Object.defineProperty` — this is an Android Player requirement.
+
+### P2PClient
+
+`src/services/api/p2p.ts` exports a `P2PClient` class with a pub/sub API.
+
+```ts
+const p2p = new P2PClient("my-channel", "Device-A", true /* isServer */);
+p2p.on("score", (data, from) => console.log(from, data));
+p2p.emit("score", { points: 42 });
+const peers = p2p.getPeers(); // server mode only
+```
+
+- Messages are JSON envelopes `{ type, clientId, data? }`. `clientId` is the device name.
+- On construction the client joins the channel and broadcasts `ping`; on any incoming `ping` it replies with `pong` automatically.
+- `"ping"` and `"pong"` are reserved type names but still delivered to user subscriptions if present.
+- Server mode (`isServer: true`) broadcasts `ping` every 60 seconds and marks a peer `online: false` if it did not respond within 3 seconds of the ping. Peers are never removed from the list.
+- No `off`/`once`/`dispose` — instances live for the template lifetime.
 
 ## AspectRatioContainer
 
