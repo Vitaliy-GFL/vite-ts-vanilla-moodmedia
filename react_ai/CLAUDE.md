@@ -25,7 +25,7 @@ src/
 │       ├── playback.ts         # Playback API (openMediaInZone, createCustomZone, etc.)
 │       ├── playlist.ts         # Playlist API (getPlaylistItems, setSchedules, mediaAvailability)
 │       ├── p2p.ts              # P2P API (P2PClient class: pub/sub, auto ping/pong, server heartbeat)
-│       ├── analytics.ts        # Analytics API (getSessionId, createAnalyticsEvent)
+│       ├── analytics.ts        # Analytics API (AnalyticsClient class: auto session, createEvent, startNewSession)
 │       ├── player-params.ts    # Player parameters (getPlayerParameters)
 │       └── debug.ts            # Debug tools (openDevTools)
 ├── components/

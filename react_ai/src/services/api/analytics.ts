@@ -1,13 +1,17 @@
 const getLoader = () => window.Loader;
 
-export function getSessionId(): Promise<string> {
-  return getLoader().getNewAnalyticsSessionIdPromise();
-}
+export class AnalyticsClient {
+  private sessionId: string = "";
 
-export function createAnalyticsEvent(
-  userTriggered: boolean,
-  sessionId: string | null,
-  customParameters: Record<string, string>,
-): void {
-  getLoader().createAnalyticsEvent(userTriggered, sessionId, customParameters);
+  constructor() {
+    this.startNewSession();
+  }
+
+   async startNewSession(): Promise<void> {
+    this.sessionId = await getLoader().getNewAnalyticsSessionIdPromise();
+  }
+
+  async createEvent(userTriggered: boolean, customParameters: Record<string, string>): Promise<void> {
+    getLoader().createAnalyticsEvent(userTriggered, this.sessionId, customParameters);
+  }
 }
