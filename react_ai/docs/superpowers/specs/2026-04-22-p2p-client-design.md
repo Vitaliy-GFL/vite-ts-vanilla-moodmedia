@@ -1,18 +1,18 @@
-# P2PClient — дизайн
+# P2PClient — Design
 
-Дата: 2026-04-22
-Файл: `src/services/api/p2p.ts`
+Date: 2026-04-22
+File: `src/services/api/p2p.ts`
 
-## Мета
+## Goal
 
-Замінити поточні функції `joinChannel` / `sendChannelMessage` / `sendChannelMessageJson` у `src/services/api/p2p.ts` на клас `P2PClient`, який:
+Replace the current `joinChannel` / `sendChannelMessage` / `sendChannelMessageJson` functions in `src/services/api/p2p.ts` with a `P2PClient` class that:
 
-- Інкапсулює join-to-channel + єдиний внутрішній dispatcher callback
-- Веде pub/sub по типах повідомлень (`on` / `emit`)
-- Автоматично шле `ping` при підʼєднанні та відповідає `pong` на чужі `ping`
-- У серверному режимі періодично пінгує канал і веде список пірів з online-статусом
+- Encapsulates join-to-channel plus a single internal dispatcher callback
+- Offers pub/sub by message type (`on` / `emit`)
+- Automatically sends `ping` on connect and replies with `pong` to other peers' `ping`
+- In server mode, periodically pings the channel and maintains a peer list with online status
 
-## Публічний API
+## Public API
 
 ```ts
 type Envelope = { type: string; clientId: string; data?: unknown };
@@ -28,76 +28,93 @@ class P2PClient {
 }
 ```
 
-### Семантика
+### Semantics
 
 - **`constructor(channelName, clientId, isServer = false)`**
-  - Викликає `window.Loader.joinChannel(clientId, channelName, dispatcher)` — реєструє **один** внутрішній callback.
-  - Відразу шле початковий `ping` у канал (через `emit("ping")`).
-  - Якщо `isServer === true` — запускає `setInterval(60_000)` для периодичного `emit("ping")` та оцінки online-статусу пірів.
-  - Callback для Loader реєструється як глобальна властивість `window["__p2pCb_<N>"]` з унікальним лічильником на інстанс (вимога Android-плеєра; існуючий патерн).
+  - Calls `window.Loader.joinChannel(clientId, channelName, dispatcher)` to register a **single** internal callback.
+  - Immediately sends an initial `ping` to the channel (via `emit("ping")`).
+  - If `isServer === true` — starts `setInterval(60_000)` that emits `ping` and evaluates peer online status.
+  - The dispatcher is registered as a global `window["__p2pCb_<N>"]` property with a per-instance counter (Android player requirement; existing pattern).
 
 - **`on(type, handler)`**
-  - Додає `handler` у `Map<string, MessageHandler[]>`.
-  - Відписки немає (YAGNI — темплейт живе до `finished()`).
-  - `once()` не передбачено.
+  - Appends `handler` to `Map<string, MessageHandler[]>`.
+  - No unsubscribe (YAGNI — the template lives until `finished()`).
+  - No `once()`.
 
 - **`emit(type, data?)`**
-  - Формує envelope `{ type, clientId: self.clientId, data }`, серіалізує `JSON.stringify`, шле через `window.Loader.sendChannelMessage(self.clientId, channelName, payload)`.
+  - Builds an envelope `{ type, clientId: self.clientId, data }`, serializes via `JSON.stringify`, sends through `window.Loader.sendChannelMessage(self.clientId, channelName, payload)`.
 
 - **`getPeers()`**
-  - Повертає знімок `Peer[]` (копію, а не внутрішній масив).
-  - У client-режимі (`isServer === false`) список пірів **не ведеться** → повертає `[]`.
+  - Returns a snapshot `Peer[]` (a copy, not the internal array).
+  - In client mode (`isServer === false`) the peer registry is **not** maintained → always returns `[]`.
 
-## Внутрішня поведінка dispatcher
+## Global-callback naming requirement
 
-Для кожного вхідного `(senderId, _channel, payload)`:
+The Android player looks up the channel callback by its function `name`, not just by the `window` property key. Therefore:
 
-1. **Парсинг**. Спроба `JSON.parse(payload)`. Якщо зламалось або немає полів `type`/`clientId` — `console.warn("P2PClient: malformed message", payload)`, далі не йдемо.
-2. **Echo-filter**. Якщо `envelope.clientId === self.clientId` — ігнор.
-3. **Оновлення peer registry** (тільки якщо `isServer`):
-   - Якщо піра з `envelope.clientId` немає в мапі — додаємо з `online: true, lastSeen: Date.now()`.
-   - Якщо є — оновлюємо `lastSeen = Date.now()` та `online = true`.
-4. **Авто-понг**. Якщо `envelope.type === "ping"` — викликаємо `self.emit("pong")`. Після цього *продовжуємо* диспатч (щоб підписки на `"ping"` теж спрацювали).
-5. **Dispatch**. Для кожного `handler` у `handlers.get(type) ?? []` — викликаємо `handler(envelope.data, envelope.clientId)` у `try/catch`; помилка логується через `console.error`, решта хендлерів продовжують працювати.
+- Before `Object.defineProperty(window, callbackName, { value: callback, configurable: true })`, the `callback` function itself must have `callback.name === callbackName`.
+- Anonymous arrow functions and class methods do not satisfy this — their `.name` is either `""` or the method name.
+- Implementation approach: use a computed object-property name to name the function, then take it out. Example:
 
-## Server-режим: heartbeat та online-статус
+  ```ts
+  const callbackName = `__p2pCb_${++p2pCallbackCounter}`;
+  const named = { [callbackName]: (senderId: string, channel: string, payload: string) => dispatch(senderId, payload) };
+  const callback = named[callbackName]; // callback.name === callbackName
+  Object.defineProperty(window, callbackName, { value: callback, configurable: true });
+  ```
 
-- Початковий ping у конструкторі шлеться в **обох** режимах (щоб інші вузли одразу відповіли `pong` і оновили свій стан). Різниця лише в тому, чи запускається далі цикл оцінки.
-- Якщо `isServer === true`: після початкового ping у конструкторі одразу ставимо `setTimeout(() => evaluate(initialPingTime), 3_000)`, а також запускаємо `setInterval(() => tick(), 60_000)`.
+- This applies to the P2P dispatcher; the same pattern is recommended anywhere a Loader callback needs a stable function name.
+
+## Dispatcher behavior
+
+For each incoming `(senderId, _channel, payload)`:
+
+1. **Parse**. `JSON.parse(payload)`. If it throws or the result lacks `type` / `clientId` fields → `console.warn("P2PClient: malformed message", payload)` and return.
+2. **Echo filter**. If `envelope.clientId === self.clientId` — ignore.
+3. **Peer registry update** (only when `isServer === true`):
+   - If the peer with `envelope.clientId` is not in the map — add it with `online: true, lastSeen: Date.now()`.
+   - Otherwise update `lastSeen = Date.now()` and `online = true`.
+4. **Auto-pong**. If `envelope.type === "ping"` — call `self.emit("pong")`. Then **continue** dispatch so subscriptions on `"ping"` still fire.
+5. **Dispatch**. For each handler in `handlers.get(type) ?? []` — call `handler(envelope.data, envelope.clientId)` inside `try/catch`; errors are logged via `console.error` without aborting the remaining handlers.
+
+## Server mode: heartbeat and online status
+
+- The initial ping from the constructor is sent in **both** modes (so other nodes respond with `pong` immediately). The difference is whether an evaluation cycle runs afterwards.
+- If `isServer === true`: after the initial constructor ping schedule `setTimeout(() => evaluate(initialPingTime), 3_000)`, and start `setInterval(() => tick(), 60_000)`.
 - `tick()`:
   1. `const pingTime = Date.now();`
   2. `self.emit("ping");`
   3. `setTimeout(() => evaluate(pingTime), 3_000);`
 - `evaluate(pingTime)`:
-  - Для кожного піра в мапі: `peer.online = peer.lastSeen >= pingTime`.
-  - Пірів **не видаляємо** — лишаються з `online: false` аж поки не зʼявляться знов.
-- Client-режим: шле тільки початковий `ping` у конструкторі, peer registry не тримає, `getPeers()` завжди повертає `[]`.
-- Власний `clientId` ніколи не потрапляє у peer registry (echo-filter у dispatcher-і відкидає самого себе).
+  - For each peer in the map: `peer.online = peer.lastSeen >= pingTime`.
+  - Peers are **not removed** — they remain with `online: false` until they reply again.
+- Client mode sends only the initial constructor `ping`, keeps no registry, and `getPeers()` always returns `[]`.
+- The client's own `clientId` never ends up in the registry (echo filter in the dispatcher rejects it).
 
-## Структура файлу
+## File structure
 
-`src/services/api/p2p.ts` після рефакторингу:
+`src/services/api/p2p.ts` after refactoring:
 
-- Експорт типів: `Envelope`, `MessageHandler`, `Peer`
-- Експорт класу: `P2PClient`
-- Більше **не** експортує: `joinChannel`, `sendChannelMessage`, `sendChannelMessageJson`, `ChannelMessageCallback`
-- Глобальний лічильник `p2pCallbackCounter` переїжджає в модульний scope поза класом — лічить callback-імена кросс-інстанс.
+- Exports types: `Envelope`, `MessageHandler`, `Peer`
+- Exports class: `P2PClient`
+- Does **not** export anymore: `joinChannel`, `sendChannelMessage`, `sendChannelMessageJson`, `ChannelMessageCallback`
+- Module-scope counter `p2pCallbackCounter` (outside the class) provides unique callback names across instances.
 
-## Помилки та edge cases
+## Errors and edge cases
 
-- **Non-JSON payload** → `console.warn`, не падаємо.
-- **Envelope без `type` або `clientId`** → `console.warn`, не падаємо.
-- **Помилка в user handler** → `console.error`, інші handler-и продовжують.
-- **`emit` до того як Loader доступний** → не обробляємо спеціально; `new P2PClient()` викликається з прикладного коду після `isStarted()`, тож `window.Loader` гарантовано є (той самий контракт що й у решти API-модулів).
+- **Non-JSON payload** → `console.warn`, do not throw.
+- **Envelope without `type` or `clientId`** → `console.warn`, do not throw.
+- **Handler throws** → `console.error`, other handlers keep running.
+- **`emit` before Loader is available** — not handled specially; `new P2PClient()` is called from app code after `isStarted()`, so `window.Loader` is guaranteed to exist (same contract as the rest of the API modules).
 
-## Оновлення документації (паралельно з рефакторингом)
+## Documentation updates (in parallel with refactoring)
 
 ### CLAUDE.md
 
-Секція `Player API` згадує `src/services/api/p2p.ts` коротко. Оновити:
+The `Player API` section briefly mentions `src/services/api/p2p.ts`. Updates:
 
-- Додати пункт що `p2p.ts` тепер експортує клас `P2PClient` з pub/sub API, auto-ping/pong та опціональним серверним heartbeat.
-- Приклад використання (кілька рядків):
+- Add a note that `p2p.ts` now exports a `P2PClient` class with a pub/sub API, auto ping/pong, and optional server heartbeat.
+- Usage example (a few lines):
 
   ```ts
   const p2p = new P2PClient("my-channel", "Device-A", true /* isServer */);
@@ -106,21 +123,22 @@ class P2PClient {
   const peers = p2p.getPeers();
   ```
 
-- Згадати що ping/pong — автоматичні (`"ping"` та `"pong"` як зарезервовані типи).
+- Mention that `"ping"` and `"pong"` are reserved type names and handled automatically.
 
-### Коментарі в коді
+### Code comments
 
-Один короткий коментар біля глобальної реєстрації callback в класі — пояснити чому `Object.defineProperty(window, ...)` (Android-плеєр). Більше коментарів не додавати.
+One short comment next to the global-callback registration explaining why `Object.defineProperty(window, ...)` is used and why the function must have a specific `.name` (Android player lookup). Nothing else.
 
-## Що НЕ робимо (YAGNI)
+## Out of scope (YAGNI)
 
-- Жодного `off`, `once`, `dispose`, `leave`.
-- Не тримаємо peer registry у client-режимі.
-- Не експоруємо `setPingInterval`, `setGraceTimeout` — значення фіксовані (60_000 / 3_000) до появи реального use case.
-- Не робимо peer-events (`peerOnline`/`peerOffline`) — споживач читає `getPeers()` тоді, коли йому треба.
+- No `off`, `once`, `dispose`, `leave`.
+- No peer registry in client mode.
+- No `setPingInterval`, `setGraceTimeout` — values are fixed (60_000 / 3_000) until a real use case appears.
+- No peer events (`peerOnline`/`peerOffline`) — consumers read `getPeers()` when they need it.
 
-## План тестування (вручну)
+## Manual test plan
 
-- Відкрити темплейт в dev з `new P2PClient("test", "A")` + другим інстансом `"B"`, перевірити що `B` отримує `ping` від `A` й відповідає `pong`.
-- Увімкнути `isServer: true` на одному інстансі — через 60 сек перевірити що `getPeers()` містить інших клієнтів з `online: true`; вимкнути одного — через ~63 сек `online: false`.
-- Зламаний payload (замінити `sendChannelMessage` на не-JSON) → `console.warn` без падіння.
+- Open the template in dev with `new P2PClient("test", "A")` and a second instance `"B"`; verify `B` receives `ping` from `A` and replies with `pong`.
+- Enable `isServer: true` on one instance — after 60 seconds verify `getPeers()` contains other clients with `online: true`; stop one of them — after ~63 seconds `online: false`.
+- Send a broken payload (bypass `emit` and push raw non-JSON into the channel) → expect `console.warn` without a crash.
+- Inspect `window["__p2pCb_<N>"].name` in the devtools console — confirm it equals the property key (`__p2pCb_<N>`).
