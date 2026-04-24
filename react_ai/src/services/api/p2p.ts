@@ -1,5 +1,3 @@
-const getLoader = () => window.Loader;
-
 let p2pCallbackCounter = 0;
 
 export type Envelope = { type: string; clientId: string; data?: unknown };
@@ -30,7 +28,7 @@ export class P2PClient {
     };
     const callback = named[callbackName];
     Object.defineProperty(window, callbackName, { value: callback, configurable: true });
-    getLoader().joinChannel(this.clientId, this.channelName, (window as never)[callbackName]);
+    window.Loader.joinChannel(this.clientId, this.channelName, (window as never)[callbackName]);
 
     this.emit("ping");
 
@@ -52,7 +50,7 @@ export class P2PClient {
 
   emit(type: string, data?: unknown): void {
     const envelope: Envelope = { type, clientId: this.clientId, data };
-    getLoader().sendChannelMessage(this.clientId, this.channelName, JSON.stringify(envelope));
+    window.Loader.sendChannelMessage(this.clientId, this.channelName, JSON.stringify(envelope));
   }
 
   getPeers(): Peer[] {

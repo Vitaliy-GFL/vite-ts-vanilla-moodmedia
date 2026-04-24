@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useConsoleCapture, type LogLevel } from "@/hooks/useConsoleCapture";
 import { openDevTools } from "@/services/api/debug";
