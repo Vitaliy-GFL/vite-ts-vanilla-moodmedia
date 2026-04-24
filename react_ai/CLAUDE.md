@@ -6,7 +6,7 @@ An HTML template for the Mood Media Harmony platform. The template runs on media
 
 ## Stack
 
-- Vite, React 18, TypeScript, Sass, Zustand
+- Vite, React 19, TypeScript, Sass, Zustand
 - `mtemplate-loader` — SDK for Player communication (available as `window.Loader`)
 - `mtemplate` — CLI to compile the template into a zip for uploading to Harmony
 - `@vitejs/plugin-legacy` — transpilation for chrome 50+ (older devices)

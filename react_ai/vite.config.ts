@@ -45,9 +45,6 @@ export default defineConfig({
   },
   // Keep function/class .name intact across transform and minification.
   // The Android player looks up P2P callbacks by function name (see src/services/api/p2p.ts).
-  esbuild: {
-    keepNames: true,
-  },
   build: {
     sourcemap: true,
     minify: 'terser',
