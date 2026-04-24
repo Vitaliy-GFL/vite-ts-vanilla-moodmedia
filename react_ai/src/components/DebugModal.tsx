@@ -31,14 +31,17 @@ interface Size {
   w: number;
   h: number;
 }
+const { outerHeight, outerWidth } = window;
+const initialSize: Size = { w: outerWidth / 3, h: outerHeight / 3 };
+const initialPos: Position = { x: outerWidth - initialSize.w - 100, y: outerHeight - initialSize.h - 100 };
 
 export default function DebugModal() {
   const { logs, clear } = useConsoleCapture(true);
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const [filter, setFilter] = useState<LogLevel | "all">("all");
 
-  const [pos, setPos] = useState<Position>({ x: 10, y: 10 });
-  const [size, setSize] = useState<Size>({ w: 480, h: 320 });
+  const [pos, setPos] = useState<Position>(initialPos);
+  const [size, setSize] = useState<Size>(initialSize);
 
   const dragging = useRef(false);
   const resizing = useRef(false);
@@ -78,7 +81,10 @@ export default function DebugModal() {
 
       const onMove = (ev: PointerEvent) => {
         if (dragging.current) {
-          setPos({ x: ev.clientX - offset.current.x, y: ev.clientY - offset.current.y });
+          setPos({
+            x: Math.min(outerWidth - 34, Math.max(-size.w + 34, ev.clientX - offset.current.x)),
+            y: Math.min(outerHeight - 34, Math.max(0, ev.clientY - offset.current.y)),
+          });
         }
         if (resizing.current) {
           const dx = ev.clientX - offset.current.x;
@@ -98,7 +104,7 @@ export default function DebugModal() {
       document.addEventListener("pointermove", onMove);
       document.addEventListener("pointerup", onUp);
     },
-    [pos],
+    [pos, size.w],
   );
 
   const filtered = filter === "all" ? logs : logs.filter((l) => l.level === filter);
