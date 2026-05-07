@@ -99,15 +99,13 @@ The file `public/mframe.json` is the template configuration for customization th
 | `bool`           | boolean      | —                                                       | Toggle                                                 |
 | `int`            | number       | —                                                       | Integer                                                |
 | `rangedInt`      | number       | `slider`                                                | Number with slider, requires `typeOptions.min/max`     |
-| `color`          | string       | —                                                       | Color                                                  |
+| `color`          | string       | —                                                       | Color(hash)                                            |
 | `select`         | string       | `btngroup`, `radio`, `fontSelect`, `fontSize`, `images` | Single choice from `typeOptions.values`                |
 | `multiselect`    | object       | `btngroup`                                              | `{"opt1": true, "opt2": false}`                        |
 | `feed`           | string (URL) | —                                                       | RSS feed, `typeOptions: {refreshRate, supportedTypes}` |
-| `imageReference` | array        | —                                                       | Image reference                                        |
-| `mediaReference` | array        | —                                                       | Media reference                                        |
-| `videoReference` | array        | —                                                       | Video reference                                        |
-| `array`          | array        | —                                                       | Array                                                  |
-| `componentArray` | array        | —                                                       | Array of components                                    |
+| `imageReference` | array        | —                                                       | Array of numbers                                       |
+| `mediaReference` | array        | —                                                       | Array of numbers                                       |
+| `array`          | array        | —                                                       | Text String Array                                      |
 
 ### Current mframe.json
 
