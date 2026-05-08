@@ -165,6 +165,13 @@ Wraps all template content. Maintains the given aspect ratio (e.g. `16/9`) when 
 <AspectRatioContainer ratio={16 / 9}>{/* template content */}</AspectRatioContainer>
 ```
 
+The content element publishes its actual rendered size as CSS custom properties on itself (in `px`):
+
+- `--aspect-w` — content width
+- `--aspect-h` — content height
+
+These are consumed by the aspect-relative `*a` helpers in Sass and `utils/px.ts` (see below).
+
 ## Design dimensions
 
 Defined once in `src/config/design.ts` (`DESIGN_WIDTH`, `DESIGN_HEIGHT`). Both Sass and JS utils read from this single source:
@@ -189,6 +196,21 @@ Defined in `src/styles/_functions.scss`. Convert design px to `vw`/`vh`.
 }
 ```
 
+### Aspect-relative variants (`pxa`, `pxha`, `fonta`, `fontwa`)
+
+Use these **inside** `AspectRatioContainer`. They scale relative to the container's actual rendered size (read from `--aspect-w` / `--aspect-h`), not the viewport. Choose them when the layout must stay correct even if the player zone is wider/taller than the chosen aspect ratio (i.e. there are letterbox/pillarbox bars).
+
+```scss
+.element {
+  width: pxa(300); // → 300/1920 * var(--aspect-w)
+  height: pxha(100); // → 100/1080 * var(--aspect-h)
+  font-size: fonta(24); // height-based, container-relative
+  font-size: fontwa(24); // width-based, container-relative
+}
+```
+
+Old `px` / `pxh` / `font` / `fontw` are kept for cases where `AspectRatioContainer` is not used (they are viewport-relative).
+
 ## JS px-to-vw/vh utilities
 
 Defined in `src/utils/px.ts`. Two groups of functions:
@@ -203,14 +225,30 @@ Defined in `src/utils/px.ts`. Two groups of functions:
 | `fontw(v)` | width    | font size via vw      |
 
 ```tsx
-import { px, pxh, fontw, pxAbs } from "@/utils/px";
+import { px, pxh, font } from "@/utils/px";
 
 // inline styles
-<div style={{ width: px(300), fontSize: fontw(24) }} />;
-
-// JS calculations (e.g. canvas)
-const actualWidth = pxAbs(300); // → number
+<div style={{ width: px(300), fontSize: font(24) }} />;
 ```
+
+### Aspect-relative variants
+
+Use these inside `AspectRatioContainer` — they scale with the container, not the viewport. Each returns a `calc()` string that resolves against the `--aspect-w` / `--aspect-h` CSS variables published by the container.
+
+| Function    | Based on | Description                                |
+| ----------- | -------- | ------------------------------------------ |
+| `pxa(v)`    | width    | design px → `calc(... * var(--aspect-w))`  |
+| `pxha(v)`   | height   | design px → `calc(... * var(--aspect-h))`  |
+| `fonta(v)`  | height   | font size, container-height relative       |
+| `fontwa(v)` | width    | font size, container-width relative        |
+
+```tsx
+import { pxa, pxha, fonta } from "@/utils/px";
+
+<div style={{ width: pxa(300), height: pxha(100), fontSize: fonta(24) }} />;
+```
+
+Old `px` / `pxh` / `font` are kept for when `AspectRatioContainer` is not used (viewport-relative).
 
 ## Device constraints
 

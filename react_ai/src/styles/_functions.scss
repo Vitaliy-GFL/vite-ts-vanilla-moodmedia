@@ -20,3 +20,27 @@
 @function fontw($value) {
   @return calc($value / $design-width * 100vw);
 }
+
+// --- Aspect-relative variants ---
+// Use inside AspectRatioContainer. They scale with the container's actual size,
+// which is published as the --aspect-w / --aspect-h CSS custom properties (in px).
+
+// Convert pixels to a width-relative length based on AspectRatioContainer
+@function pxa($value) {
+  @return calc($value / $design-width * var(--aspect-w));
+}
+
+// Convert pixels to a height-relative length based on AspectRatioContainer
+@function pxha($value) {
+  @return calc($value / $design-height * var(--aspect-h));
+}
+
+// Font size based on AspectRatioContainer height
+@function fonta($value) {
+  @return calc($value / $design-height * var(--aspect-h));
+}
+
+// Font size based on AspectRatioContainer width
+@function fontwa($value) {
+  @return calc($value / $design-width * var(--aspect-w));
+}
