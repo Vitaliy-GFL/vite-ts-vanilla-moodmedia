@@ -34,7 +34,17 @@ export default function AspectRatioContainer({ ratio, children, className }: Asp
 
   return (
     <div ref={wrapperRef} className={`aspect-wrapper ${className ?? ""}`}>
-      <div className="aspect-content" style={{ width: style.width, height: style.height }}>
+      <div
+        className="aspect-content"
+        style={
+          {
+            width: style.width,
+            height: style.height,
+            "--aspect-w": `${style.width}px`,
+            "--aspect-h": `${style.height}px`,
+          } as React.CSSProperties
+        }
+      >
         {children}
       </div>
     </div>

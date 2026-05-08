@@ -7,7 +7,7 @@ import { initTemplate, signalReady, waitForStart, getDuration } from "@/services
 import { useTemplateStore } from "@/store/templateStore";
 
 import "./styles/main.scss";
-import { px } from "./utils/px";
+import { pxa } from "./utils/px";
 
 function App() {
   const { isStarted, error, setComponents, setStarted, setReady, setDuration, setError } = useTemplateStore();
@@ -63,7 +63,7 @@ function App() {
   return (
     <div className="app">
       <AspectRatioContainer ratio={DESIGN_WIDTH / DESIGN_HEIGHT}>
-        <h1 style={{ fontSize: px(40) }}>Harmony Template</h1>
+        <h1 style={{ fontSize: pxa(40) }}>Harmony Template</h1>
       </AspectRatioContainer>
       {debugEnabled && <DebugModal />}
     </div>
