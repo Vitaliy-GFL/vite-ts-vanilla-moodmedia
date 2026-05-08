@@ -1,10 +1,32 @@
 {
-  "$schema": "https://raw.githubusercontent.com/nicolo-ribaudo/oxc/json-schema/npm/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript"],
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": [
+    "typescript",
+    "unicorn",
+    "oxc",
+    "react"
+  ],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn",
+    "perf": "warn"
+  },
+  "env": {
+    "browser": true
+  },
+  "settings": {
+    "react": {
+      "version": "19.0.0"
+    }
+  },
   "rules": {
     "no-unused-vars": "warn",
     "react/exhaustive-deps": "warn",
-    "react/rules-of-hooks": "error"
+    "react/rules-of-hooks": "error",
+    "react/react-in-jsx-scope": "off",
+    "oxc/no-map-spread": "off"
   },
-  "ignorePatterns": ["dist"]
+  "ignorePatterns": [
+    "dist"
+  ]
 }
