@@ -6,7 +6,7 @@ An HTML template for the Mood Media Harmony platform. The template runs on media
 
 ## Stack
 
-- Vite, React 19, TypeScript, Sass, Zustand
+- Vite, React, TypeScript, Sass, Zustand
 - `mtemplate-loader` — SDK for Player communication (available as `window.Loader`)
 - `mtemplate` — CLI to compile the template into a zip for uploading to Harmony
 - `@vitejs/plugin-legacy` — transpilation for chrome 50+ (older devices)
@@ -108,7 +108,7 @@ The `renderType` column lists valid values for `typeOptions.renderType`.
 
 | type             | value type           | typeOptions                                                  | Description                                                       |
 | ---------------- | -------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------- |
-| `string`         | string               | `renderType: "limited"` for multiline (optional)             | Text input (single-line by default)                               |
+| `string`         | string               | `renderType: "limited"` enables advanced options (see below) | Text input (single-line by default)                               |
 | `bool`           | boolean              | —                                                            | Toggle                                                            |
 | `int`            | number               | —                                                            | Integer                                                           |
 | `rangedInt`      | number               | `renderType: "slider"`, `min`, `max`, `step?`                | Single integer with slider constraints                            |
@@ -153,6 +153,45 @@ The `renderType` column lists valid values for `typeOptions.renderType`.
 }
 ```
 
+### Advanced string options (`renderType: "limited"`)
+
+Setting `typeOptions.renderType: "limited"` on a `string` param enables multiline input and/or a character limit. Both features are configured via **sibling parameters in the same component** and apply to **every** `limited` string in that component:
+
+- **Multiline** — add a `bool` param named `multiline` with `value: true`. The string preserves line breaks.
+- **Character limit** — add an `int` param named `maxCharacters` with `typeOptions.renderType: "maxCharacters"` and `value` = the limit.
+
+Both helper params can have `locked: true` to hide them from the Visuals UI.
+
+```jsonc
+{
+  "name": "textBlock",
+  "params": [
+    {
+      "name": "body",
+      "type": "string",
+      "value": "Multi\nline\ntext",
+      "label": { "en-US": { "value": "Body", "tooltip": "..." } },
+      "typeOptions": { "renderType": "limited" }
+    },
+    {
+      "name": "multiline",
+      "type": "bool",
+      "value": true,
+      "locked": true,
+      "label": { "en-US": { "value": "Multiline", "tooltip": "..." } }
+    },
+    {
+      "name": "maxCharacters",
+      "type": "int",
+      "value": 280,
+      "locked": true,
+      "label": { "en-US": { "value": "Max chars", "tooltip": "..." } },
+      "typeOptions": { "renderType": "maxCharacters" }
+    }
+  ]
+}
+```
+
 ### Current mframe.json
 
 Components:
@@ -162,7 +201,7 @@ Components:
 
 ### How to add a new parameter
 
-1. Add the parameter to the appropriate component in `public/mframe.json`
+1. Add the parameter to the appropriate component in `public/mframe.json`. Required: `name`, `type`, `value`, `label`. Add `typeOptions` if the type needs it (see Parameter types table) and `locked: true` to hide it from the Visuals UI.
 2. Read the value in React via Zustand: `useTemplateStore.getState().getParam<T>('componentName', 'paramName')`
 
 ### How to add a new component
@@ -184,7 +223,7 @@ const value = useTemplateStore.getState().getParam<boolean>("debug", "enabled");
 
 API is available through wrappers in `src/services/api/`. Playback API works **only after `isStarted()`**.
 
-Callback functions for `playlist.ts` and `p2p.ts` are registered on the global scope via `Object.defineProperty` — this is an Android Player requirement.
+Callback functions for `playlist.ts` and `p2p.ts` are registered on the global scope via `Object.defineProperty` — this is an Android Player requirement. For the same reason, Terser is configured to preserve identifiers (`keep_fnames` and `keep_classnames` in `vite.config.ts`) — the Player looks up callbacks by name and minified names break it. Don't change.
 
 ### P2PClient
 
@@ -227,9 +266,20 @@ Defined once in `src/config/design.ts` (`DESIGN_WIDTH`, `DESIGN_HEIGHT`). Both S
 
 To change the design size, edit `src/config/design.ts` only.
 
-## Sass px-to-vw/vh functions
+## Px-to-vw/vh helpers
 
-Defined in `src/styles/_functions.scss`. Convert design px to `vw`/`vh`.
+Convert design px to viewport- or container-relative lengths. Defined in `src/styles/_functions.scss` (Sass) and `src/utils/px.ts` (JS — return `style`-prop strings like `"15.625vw"`).
+
+### Viewport-relative (default)
+
+Use when content fills the whole viewport (no `AspectRatioContainer`).
+
+| Function   | Sass | JS  | Based on | Description       |
+| ---------- | :--: | :-: | -------- | ----------------- |
+| `px(v)`    |  ✓   |  ✓  | width    | design px → vw    |
+| `pxh(v)`   |  ✓   |  ✓  | height   | design px → vh    |
+| `font(v)`  |  ✓   |  ✓  | height   | font size via vh  |
+| `fontw(v)` |  ✓   |  —  | width    | font size via vw  |
 
 ```scss
 @use "functions" as *;
@@ -237,63 +287,40 @@ Defined in `src/styles/_functions.scss`. Convert design px to `vw`/`vh`.
 .element {
   width: px(300); // → 300/1920 * 100vw
   height: pxh(100); // → 100/1080 * 100vh
-  font-size: font(24); // → vh-based
-  font-size: fontw(24); // → vw-based
+  font-size: font(24);
 }
 ```
-
-### Aspect-relative variants (`pxa`, `pxha`, `fonta`, `fontwa`)
-
-Use these **inside** `AspectRatioContainer`. They scale relative to the container's actual rendered size (read from `--aspect-w` / `--aspect-h`), not the viewport. Choose them when the layout must stay correct even if the player zone is wider/taller than the chosen aspect ratio (i.e. there are letterbox/pillarbox bars).
-
-```scss
-.element {
-  width: pxa(300); // → 300/1920 * var(--aspect-w)
-  height: pxha(100); // → 100/1080 * var(--aspect-h)
-  font-size: fonta(24); // height-based, container-relative
-  font-size: fontwa(24); // width-based, container-relative
-}
-```
-
-Old `px` / `pxh` / `font` / `fontw` are kept for cases where `AspectRatioContainer` is not used (they are viewport-relative).
-
-## JS px-to-vw/vh utilities
-
-Defined in `src/utils/px.ts`. Two groups of functions:
-
-**CSS unit strings** (for `style` props) — return strings like `"15.625vw"`:
-
-| Function   | Based on | Description           |
-| ---------- | -------- | --------------------- |
-| `px(v)`    | width    | design px → vw string |
-| `pxh(v)`   | height   | design px → vh string |
-| `font(v)`  | height   | font size via vh      |
 
 ```tsx
 import { px, pxh, font } from "@/utils/px";
 
-// inline styles
 <div style={{ width: px(300), fontSize: font(24) }} />;
 ```
 
-### Aspect-relative variants
+### Aspect-relative (inside `AspectRatioContainer`)
 
-Use these inside `AspectRatioContainer` — they scale with the container, not the viewport. Each returns a `calc()` string that resolves against the `--aspect-w` / `--aspect-h` CSS variables published by the container.
+Scale with the container's actual rendered size (read from `--aspect-w` / `--aspect-h`), not the viewport. Use when the player zone may be wider/taller than the chosen aspect ratio (letterbox/pillarbox bars).
 
-| Function    | Based on | Description                                |
-| ----------- | -------- | ------------------------------------------ |
-| `pxa(v)`    | width    | design px → `calc(... * var(--aspect-w))`  |
-| `pxha(v)`   | height   | design px → `calc(... * var(--aspect-h))`  |
-| `fonta(v)`  | height   | font size, container-height relative       |
-| `fontwa(v)` | width    | font size, container-width relative        |
+| Function    | Sass | JS  | Based on | Description                                |
+| ----------- | :--: | :-: | -------- | ------------------------------------------ |
+| `pxa(v)`    |  ✓   |  ✓  | width    | design px → `calc(... * var(--aspect-w))`  |
+| `pxha(v)`   |  ✓   |  ✓  | height   | design px → `calc(... * var(--aspect-h))`  |
+| `fonta(v)`  |  ✓   |  ✓  | height   | font size, container-height relative       |
+| `fontwa(v)` |  ✓   |  ✓  | width    | font size, container-width relative        |
+
+```scss
+.element {
+  width: pxa(300);
+  height: pxha(100);
+  font-size: fonta(24);
+}
+```
 
 ```tsx
 import { pxa, pxha, fonta } from "@/utils/px";
 
 <div style={{ width: pxa(300), height: pxha(100), fontSize: fonta(24) }} />;
 ```
-
-Old `px` / `pxh` / `font` are kept for when `AspectRatioContainer` is not used (viewport-relative).
 
 ## Device constraints
 
@@ -306,19 +333,12 @@ Old `px` / `pxh` / `font` are kept for when `AspectRatioContainer` is not used (
 - `touchstart` works better than `click` on players
 - `Node.appendChild()` instead of `ParentNode.append()`
 
-## Linting & Formatting
-
-Uses **oxlint** (linter) and **oxfmt** (formatter) instead of ESLint/Prettier.
-
-- Config: `.oxlintrc.json` (linter), `.oxfmtrc.json` (formatter)
-- `npm run lint` — run oxlint
-- `npm run fmt` — format source files
-- `npm run fmt:check` — check formatting without writing
-
 ## Commands
 
+Tooling: **oxlint** (linter, `.oxlintrc.json`) and **oxfmt** (formatter, `.oxfmtrc.json`) — used instead of ESLint/Prettier.
+
 - `npm run dev` — dev server (port 3000)
-- `npm run build` — production build + mtemplate compile → zip
-- `npm run build:simple` — tsc + vite build only (no mtemplate)
+- `npm run build` — lint + tsc + vite build + `mtemplate compile` → zip
+- `npm run build:simple` — tsc + vite build only (no `mtemplate`)
 - `npm run lint` — oxlint
 - `npm run fmt` / `npm run fmt:check` — oxfmt format / check
