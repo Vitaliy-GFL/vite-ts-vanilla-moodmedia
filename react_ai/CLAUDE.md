@@ -35,8 +35,12 @@ src/
 │   └── DebugModal.scss
 ├── hooks/
 │   └── useConsoleCapture.ts    # Intercepts console.log/warn/error into state
+├── config/
+│   └── design.ts               # DESIGN_WIDTH / DESIGN_HEIGHT (single source for Sass + JS)
+├── utils/
+│   └── px.ts                   # JS px-to-vw/vh helpers (viewport + aspect-relative)
 └── styles/
-    ├── _functions.scss         # px(), pxh(), font() — convert design px to vw/vh
+    ├── _functions.scss         # Sass px-to-vw/vh helpers (viewport + aspect-relative)
     ├── _variables.scss
     ├── _reset.scss
     └── main.scss
@@ -71,11 +75,16 @@ The file `public/mframe.json` is the template configuration for customization th
       "params": [
         {
           "name": "paramName",
-          "type": "string",
-          "value": "default value",
+          "type": "rangedInt",
+          "value": 50,
           "locked": false,
           "label": {
             "en-US": { "value": "Param Label", "tooltip": "Help text" }
+          },
+          "typeOptions": {
+            "renderType": "slider",
+            "min": 0,
+            "max": 100
           }
         }
       ]
@@ -86,33 +95,70 @@ The file `public/mframe.json` is the template configuration for customization th
 
 ### Rules
 
+- Required fields on a parameter: `name`, `type`, `value`, `label`. `locked` and `typeOptions` are optional (some types require `typeOptions` — see the table).
 - Component `name` must be **unique**. Convention: `camelCase` + numeric suffix (`myComponent0`). Duplicates will break Harmony.
 - Parameter `name` must be **unique within its component**.
 - `locked: true` — hides the component/parameter in Harmony Visuals (still visible in HTML Editor).
 - `label` — object with localizations. Key is a language code (`en-US`). `tooltip` provides a hint for the user.
+- `typeOptions` — extra configuration for the parameter (constraints, choices, render variant). The UI variant goes inside as `typeOptions.renderType`.
 
 ### Parameter types
 
-| type             | value type   | renderType                                              | Description                                            |
-| ---------------- | ------------ | ------------------------------------------------------- | ------------------------------------------------------ |
-| `string`         | string       | `limited` (multiline)                                   | Text string                                            |
-| `bool`           | boolean      | —                                                       | Toggle                                                 |
-| `int`            | number       | —                                                       | Integer                                                |
-| `rangedInt`      | number       | `slider`                                                | Number with slider, requires `typeOptions.min/max`     |
-| `color`          | string       | —                                                       | Color(hash)                                            |
-| `select`         | string       | `btngroup`, `radio`, `fontSelect`, `fontSize`, `images` | Single choice from `typeOptions.values`                |
-| `multiselect`    | object       | `btngroup`                                              | `{"opt1": true, "opt2": false}`                        |
-| `feed`           | string (URL) | —                                                       | RSS feed, `typeOptions: {refreshRate, supportedTypes}` |
-| `imageReference` | array        | —                                                       | Array of numbers                                       |
-| `mediaReference` | array        | —                                                       | Array of numbers                                       |
-| `array`          | array        | —                                                       | Text String Array                                      |
+The `renderType` column lists valid values for `typeOptions.renderType`.
+
+| type             | value type           | typeOptions                                                  | Description                                                       |
+| ---------------- | -------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------- |
+| `string`         | string               | `renderType: "limited"` for multiline (optional)             | Text input (single-line by default)                               |
+| `bool`           | boolean              | —                                                            | Toggle                                                            |
+| `int`            | number               | —                                                            | Integer                                                           |
+| `rangedInt`      | number               | `renderType: "slider"`, `min`, `max`, `step?`                | Single integer with slider constraints                            |
+| `intRange`       | `{min, max}`         | `min`, `max`, `step?`                                        | User-selected sub-range within bounds                             |
+| `color`          | string               | —                                                            | Hex color, e.g. `"#ff0000"` (no alpha — see Device constraints)   |
+| `select`         | string               | `renderType`, `values: string[]`                             | Single choice. renderType: `btngroup`, `radio`, `fontSelect`, `fontSize`, `images` |
+| `imageReference` | `string[]`           | —                                                            | Image paths picked via Harmony UI                                 |
+| `mediaReference` | `number[]`           | —                                                            | Media IDs, used with `getPlaylistItems`                           |
+| `array`          | `string[]`           | —                                                            | Free-form list of user-entered strings                            |
+
+### Examples
+
+```jsonc
+// rangedInt — single number with slider
+{
+  "name": "X",
+  "type": "rangedInt",
+  "value": 0,
+  "label": { "en-US": { "value": "X", "tooltip": "..." } },
+  "typeOptions": { "renderType": "slider", "min": 0, "max": 100 }
+}
+
+// intRange — user picks a sub-range within bounds
+{
+  "name": "fontSize",
+  "type": "intRange",
+  "value": { "min": 12, "max": 100 },
+  "label": { "en-US": { "value": "Font Size", "tooltip": "..." } },
+  "typeOptions": { "min": 10, "max": 100, "step": 1 }
+}
+
+// select — single choice rendered as a button group
+{
+  "name": "textTransform",
+  "type": "select",
+  "value": "none",
+  "label": { "en-US": { "value": "Text Case", "tooltip": "..." } },
+  "typeOptions": {
+    "renderType": "btngroup",
+    "values": ["none", "uppercase", "capitalize", "lowercase"]
+  }
+}
+```
 
 ### Current mframe.json
 
 Components:
 
 - **debug** — debug options
-  - `enabled` (bool): show the debug modal with console logs (DebugModal). The modal is draggable, collapsible/expandable, and resizable. The header displays the app version from package.json.
+  - `enabled` (bool): show the DebugModal overlay with captured console logs.
 
 ### How to add a new parameter
 
@@ -222,7 +268,6 @@ Defined in `src/utils/px.ts`. Two groups of functions:
 | `px(v)`    | width    | design px → vw string |
 | `pxh(v)`   | height   | design px → vh string |
 | `font(v)`  | height   | font size via vh      |
-| `fontw(v)` | width    | font size via vw      |
 
 ```tsx
 import { px, pxh, font } from "@/utils/px";

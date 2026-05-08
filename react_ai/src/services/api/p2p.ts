@@ -8,15 +8,13 @@ export class P2PClient {
   private readonly channelName: string;
   private readonly clientId: string;
   private readonly isServer: boolean;
-  private readonly echoSelf: boolean;
   private readonly handlers = new Map<string, MessageHandler[]>();
   private readonly peers = new Map<string, Peer>();
 
-  constructor(channelName: string, clientId: string, isServer: boolean = false, echoSelf: boolean = false) {
+  constructor(channelName: string, clientId: string, isServer: boolean = false) {
     this.channelName = channelName;
     this.clientId = clientId;
     this.isServer = isServer;
-    this.echoSelf = echoSelf;
 
     const callbackName = `__p2pCb_${++p2pCallbackCounter}`;
     // Computed property name sets callback.name === callbackName.
@@ -87,8 +85,6 @@ export class P2PClient {
       console.warn("P2PClient: malformed message", payload);
       return;
     }
-
-    if (envelope.clientId === this.clientId && !this.echoSelf) return;
 
     if (this.isServer) {
       const existing = this.peers.get(envelope.clientId);
