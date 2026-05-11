@@ -16,6 +16,7 @@ export class P2PClient {
 
     // Callback must be a named function on global scope for Android player.
     // Name is derived from fn.name so minification cannot desync it (keep_fnames preserves it).
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     function p2pCallback(senderId: string, _channel: string, payload: string): void {
       self.dispatch(senderId, payload);

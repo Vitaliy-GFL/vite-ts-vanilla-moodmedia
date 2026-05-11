@@ -52,7 +52,7 @@ export default function DebugModal() {
 
   const onP2PTest = useCallback(() => {
     if (!p2pRef.current) {
-      const client = new P2PClient("debug-loopback", "debug-self", false, true);
+      const client = new P2PClient("debug-loopback", "debug-self", false);
       client.on("debug-test", (data, from) => {
         console.log("[P2P] recv from", from, data);
       });
