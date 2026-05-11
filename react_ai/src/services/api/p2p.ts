@@ -1,5 +1,3 @@
-let p2pCallbackCounter = 0;
-
 export type Envelope = { type: string; clientId: string; data?: unknown };
 export type MessageHandler = (data: unknown, fromClientId: string) => void;
 export type Peer = { clientId: string; online: boolean; lastSeen: number };
@@ -16,17 +14,15 @@ export class P2PClient {
     this.clientId = clientId;
     this.isServer = isServer;
 
-    const callbackName = `__p2pCb_${++p2pCallbackCounter}`;
-    // Computed property name sets callback.name === callbackName.
-    // Required by the Android player which looks up the callback by function name.
-    const named = {
-      [callbackName]: (senderId: string, _channel: string, payload: string): void => {
-        this.dispatch(senderId, payload);
-      },
-    };
-    const callback = named[callbackName];
-    Object.defineProperty(window, callbackName, { value: callback, configurable: true });
-    window.Loader.joinChannel(this.clientId, this.channelName, (window as never)[callbackName]);
+    // Callback must be a named function on global scope for Android player.
+    // Name is derived from fn.name so minification cannot desync it (keep_fnames preserves it).
+    const self = this;
+    function p2pCallback(senderId: string, _channel: string, payload: string): void {
+      self.dispatch(senderId, payload);
+    }
+
+    Object.defineProperty(window, p2pCallback.name, { value: p2pCallback, configurable: true });
+    window.Loader.joinChannel(this.clientId, this.channelName, (window as never)[p2pCallback.name]);
 
     this.emit("ping");
 

@@ -2,20 +2,20 @@ import type { PlaylistItem, PlaylistItemSchedule } from "@/types/harmony";
 
 const getLoader = () => window.Loader;
 
-let playlistCallbackCounter = 0;
-
 export function getPlaylistItems(playlistId: number): Promise<PlaylistItem[]> {
   return new Promise((resolve) => {
-    const callbackName = `__playlistCb_${++playlistCallbackCounter}`;
-
-    const callback = (items: PlaylistItem[]) => {
-      delete (window as never)[callbackName];
+    // Callback must be a named function on global scope for Android player.
+    // Name is derived from fn.name so minification cannot desync it (keep_fnames preserves it).
+    function playlistCallback(items: PlaylistItem[]) {
+      delete (window as never)[playlistCallback.name];
       resolve(items);
-    };
+    }
 
-    // Callback must be on global scope for Android player
-    Object.defineProperty(window, callbackName, { value: callback, configurable: true });
-    getLoader().getPlaylistContainerItems(playlistId, (window as never)[callbackName]);
+    Object.defineProperty(window, playlistCallback.name, {
+      value: playlistCallback,
+      configurable: true,
+    });
+    getLoader().getPlaylistContainerItems(playlistId, (window as never)[playlistCallback.name]);
   });
 }
 
