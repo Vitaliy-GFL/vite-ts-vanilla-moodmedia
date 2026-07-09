@@ -21,6 +21,7 @@
   },
   "rules": {
     "no-unused-vars": "warn",
+    "no-underscore-dangle": ["warn", { "allow": ["__APP_VERSION__"] }],
     "react/exhaustive-deps": "warn",
     "react/rules-of-hooks": "error",
     "react/react-in-jsx-scope": "off",
