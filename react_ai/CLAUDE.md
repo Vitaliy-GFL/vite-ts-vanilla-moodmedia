@@ -118,6 +118,7 @@ The `renderType` column lists valid values for `typeOptions.renderType`.
 | `imageReference` | `string[]`           | —                                                            | Image paths picked via Harmony UI                                 |
 | `mediaReference` | `number[]`           | —                                                            | Media IDs, used with `getPlaylistItems`                           |
 | `array`          | `string[]`           | —                                                            | Free-form list of user-entered strings                            |
+| `separator`      | boolean (unused)     | —                                                            | Visual group header, not a data param. Groups the params that follow it — until the next `separator` or the end of the component |
 
 ### Examples
 
@@ -150,6 +151,15 @@ The `renderType` column lists valid values for `typeOptions.renderType`.
     "renderType": "btngroup",
     "values": ["none", "uppercase", "capitalize", "lowercase"]
   }
+}
+
+// separator — visual group header; groups all params after it,
+// until the next separator or the end of the component
+{
+  "name": "alignmentSeparator",
+  "type": "separator",
+  "value": false,
+  "label": { "en-US": { "value": "Alignment", "tooltip": "" } }
 }
 ```
 
@@ -321,6 +331,10 @@ import { pxa, pxha, fonta } from "@/utils/px";
 
 <div style={{ width: pxa(300), height: pxha(100), fontSize: fonta(24) }} />;
 ```
+
+## Layout rules
+
+- When building menus/blocks, do NOT default to `position: absolute` for everything. Agree on the CSS layout approach with the user first: some menus should stretch to fill the free space (flex/flow), others must sit at a specific spot.
 
 ## Device constraints
 
