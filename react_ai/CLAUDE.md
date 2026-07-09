@@ -335,6 +335,7 @@ import { pxa, pxha, fonta } from "@/utils/px";
 ## Layout rules
 
 - When building menus/blocks, do NOT default to `position: absolute` for everything. Agree on the CSS layout approach with the user first: some menus should stretch to fill the free space (flex/flow), others must sit at a specific spot.
+- If a template contains several menus, add a dev-mode-only popup overlay to switch between them (for previewing each menu without rebuilding).
 
 ## Device constraints
 
