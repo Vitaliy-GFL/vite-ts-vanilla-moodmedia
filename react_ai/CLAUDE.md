@@ -273,7 +273,7 @@ These are consumed by the aspect-relative `*a` helpers in Sass and `utils/px.ts`
 
 Defined once in `src/config/design.ts` (`DESIGN_WIDTH`, `DESIGN_HEIGHT`). Both Sass and JS utils read from this single source:
 
-- **Sass**: Vite injects `$design-width` / `$design-height` via `css.preprocessorOptions.scss.additionalData`
+- **Sass**: Vite loads the `functions` module globally into every `.scss` file via `css.preprocessorOptions.scss.additionalData` (`@use "functions" as * with ($design-width..., $design-height...)`), so the helpers below need no `@use`
 - **JS**: `src/utils/px.ts` imports from `@/config/design`
 
 To change the design size, edit `src/config/design.ts` only.
@@ -294,7 +294,7 @@ Use when content fills the whole viewport (no `AspectRatioContainer`).
 | `fontw(v)` |  ✓   |  —  | width    | font size via vw  |
 
 ```scss
-@use "functions" as *;
+// no @use needed — helpers are available globally in every .scss file
 
 .element {
   width: px(300); // → 300/1920 * 100vw

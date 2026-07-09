@@ -54,7 +54,10 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       scss: {
-        additionalData: `$design-width: ${DESIGN_WIDTH};\n$design-height: ${DESIGN_HEIGHT};\n`,
+        // Makes the px()/pxa()/font() helpers available in every .scss file
+        // (no @use needed), configured with the design size from design.ts.
+        additionalData: `@use "functions" as * with ($design-width: ${DESIGN_WIDTH}, $design-height: ${DESIGN_HEIGHT});\n`,
+        loadPaths: [resolve(__dirname, 'src/styles')],
       },
     },
   },

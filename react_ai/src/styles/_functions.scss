@@ -1,5 +1,8 @@
-// $design-width and $design-height are injected by Vite from src/config/design.ts
-// via css.preprocessorOptions.scss.additionalData in vite.config.ts
+// $design-width and $design-height are configured by Vite from src/config/design.ts
+// via `@use "functions" with (...)` in css.preprocessorOptions.scss.additionalData.
+// null (not real numbers) so an unconfigured load fails loudly instead of drifting.
+$design-width: null !default;
+$design-height: null !default;
 
 // Convert pixels to vw relative to $design-width
 @function px($value) {
