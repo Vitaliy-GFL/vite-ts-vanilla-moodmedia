@@ -9,7 +9,7 @@ An HTML template for the Mood Media Harmony platform. The template runs on media
 - Vite, React, TypeScript, Sass, Zustand
 - `mtemplate-loader` — SDK for Player communication (available as `window.Loader`)
 - `mtemplate` — CLI to compile the template into a zip for uploading to Harmony
-- `@vitejs/plugin-legacy` — transpilation for chrome 50+ (older devices)
+- `@vitejs/plugin-legacy` — transpilation for chrome 89+ (older devices)
 
 ## Project structure
 
@@ -32,9 +32,11 @@ src/
 │   ├── AspectRatioContainer.tsx # Maintains aspect ratio on resize (wraps all content)
 │   ├── AspectRatioContainer.scss
 │   ├── DebugModal.tsx          # Draggable/resizable debug console overlay
-│   └── DebugModal.scss
+│   ├── DebugModal.scss
+│   ├── ErrorBoundary.tsx       # Catches render errors, reports them via Loader.error()
+│   └── ErrorScreen.tsx         # Error UI (init + render errors), keeps DebugModal visible
 ├── hooks/
-│   └── useConsoleCapture.ts    # Intercepts console.log/warn/error into state
+│   └── useConsoleCapture.ts    # Module-level console.log/warn/error capture (installed in main.tsx) + hook
 ├── config/
 │   └── design.ts               # DESIGN_WIDTH / DESIGN_HEIGHT (single source for Sass + JS)
 ├── utils/
@@ -207,7 +209,7 @@ Both helper params can have `locked: true` to hide them from the Visuals UI.
 Components:
 
 - **debug** — debug options
-  - `enabled` (bool): show the DebugModal overlay with captured console logs.
+  - `enabled` (bool, default `false`): show the DebugModal overlay with captured console logs.
 
 ### How to add a new parameter
 
@@ -353,7 +355,7 @@ import { pxa, pxha, fonta } from "@/utils/px";
 Tooling: **oxlint** (linter, `.oxlintrc.json`) and **oxfmt** (formatter, `.oxfmtrc.json`) — used instead of ESLint/Prettier.
 
 - `npm run dev` — dev server (port 3000)
-- `npm run build` — lint + tsc + vite build + `mtemplate compile` → zip
+- `npm run build` — lint + fmt check + tsc + vite build + `mtemplate compile` (via `scripts/compile.mjs`) → zip
 - `npm run build:simple` — tsc + vite build only (no `mtemplate`)
 - `npm run lint` — oxlint
 - `npm run fmt` / `npm run fmt:check` — oxfmt format / check

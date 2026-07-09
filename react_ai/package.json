@@ -9,11 +9,9 @@
     "fmt": "oxfmt -c .oxfmtrc.json src/",
     "fmt:check": "oxfmt -c .oxfmtrc.json --check src/",
     "preview": "vite preview",
-    "build": "npm run lint && tsc -b && vite build && mv dist/main.html dist/index.html && cp public/mframe.json mframe.json && npm run compile",
-    "build:windows": "npm run lint && tsc -b && vite build && move dist\\main.html dist\\index.html && copy public\\mframe.json mframe.json && npm run compile:windows",
+    "build": "npm run lint && npm run fmt:check && tsc -b && vite build && node scripts/compile.mjs",
     "build:simple": "tsc -b && vite build",
-    "compile": "cp dist/index.html index.html && mtemplate compile && rm mframe.json index.html",
-    "compile:windows": "copy dist\\index.html index.html && mtemplate compile && del mframe.json index.html"
+    "compile": "node scripts/compile.mjs"
   },
   "dependencies": {
     "mtemplate-loader": "^2.0.40",

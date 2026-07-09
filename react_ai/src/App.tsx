@@ -2,8 +2,9 @@ import { useEffect } from "react";
 
 import AspectRatioContainer from "@/components/AspectRatioContainer";
 import DebugModal from "@/components/DebugModal";
+import ErrorScreen from "@/components/ErrorScreen";
 import { DESIGN_WIDTH, DESIGN_HEIGHT } from "@/config/design";
-import { initTemplate, signalReady, waitForStart, getDuration } from "@/services/template-loader";
+import { initTemplate, signalReady, signalError, waitForStart, getDuration } from "@/services/template-loader";
 import { useTemplateStore } from "@/store/templateStore";
 
 import "./styles/main.scss";
@@ -28,6 +29,7 @@ function App() {
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         console.error("Template init error:", message);
+        signalError("Failed to load template configuration: " + message);
         setError("Failed to load template configuration: " + message);
       }
     }
@@ -48,12 +50,7 @@ function App() {
   }, [setComponents, setStarted, setReady, setDuration, setError]);
 
   if (error) {
-    return (
-      <div className="app app--error">
-        <p className="app__error-title">Template Error</p>
-        <p className="app__error-message">{error}</p>
-      </div>
-    );
+    return <ErrorScreen message={error} />;
   }
 
   if (!isStarted) {
@@ -62,10 +59,11 @@ function App() {
 
   return (
     <div className="app">
+      {debugEnabled && <DebugModal />}
+
       <AspectRatioContainer ratio={DESIGN_WIDTH / DESIGN_HEIGHT}>
         <h1 style={{ fontSize: pxa(40) }}>Harmony Template</h1>
       </AspectRatioContainer>
-      {debugEnabled && <DebugModal />}
     </div>
   );
 }

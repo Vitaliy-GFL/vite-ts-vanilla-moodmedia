@@ -13,7 +13,7 @@
         {
           "name": "enabled",
           "type": "bool",
-          "value": true,
+          "value": false,
           "label": {
             "en-US": {
               "value": "Show Console",

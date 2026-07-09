@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 export type LogLevel = "log" | "warn" | "error";
 
@@ -9,7 +9,12 @@ export interface LogEntry {
   args: string;
 }
 
+const MAX_ENTRIES = 200;
+
 let idCounter = 0;
+let entries: LogEntry[] = [];
+let installed = false;
+const listeners = new Set<() => void>();
 
 function formatArgs(args: unknown[]): string {
   return args
@@ -24,49 +29,52 @@ function formatArgs(args: unknown[]): string {
     .join(" ");
 }
 
-export function useConsoleCapture(enabled: boolean, maxEntries = 200) {
-  const [logs, setLogs] = useState<LogEntry[]>([]);
-  const originalsRef = useRef<Record<LogLevel, (...args: unknown[]) => void> | null>(null);
+function notify(): void {
+  for (const listener of listeners) listener();
+}
 
-  const clear = useCallback(() => setLogs([]), []);
+// Captures console output for the whole template lifetime (not tied to a mounted
+// component), so logs emitted before DebugModal appears are not lost. Call once
+// as early as possible — see main.tsx.
+export function installConsoleCapture(): void {
+  if (installed) return;
+  installed = true;
+
+  const levels: LogLevel[] = ["log", "warn", "error"];
+
+  for (const level of levels) {
+    const original = console[level].bind(console);
+    console[level] = (...args: unknown[]) => {
+      original(...args);
+      const entry: LogEntry = {
+        id: ++idCounter,
+        level,
+        timestamp: Date.now(),
+        args: formatArgs(args),
+      };
+      const next = [...entries, entry];
+      entries = next.length > MAX_ENTRIES ? next.slice(-MAX_ENTRIES) : next;
+      notify();
+    };
+  }
+}
+
+export function useConsoleCapture() {
+  const [logs, setLogs] = useState<LogEntry[]>(entries);
 
   useEffect(() => {
-    if (!enabled) return;
-
-    if (originalsRef.current) return;
-
-    const originals: Record<LogLevel, (...args: unknown[]) => void> = {
-      log: console.log.bind(console),
-      warn: console.warn.bind(console),
-      error: console.error.bind(console),
-    };
-    originalsRef.current = originals;
-
-    const levels: LogLevel[] = ["log", "warn", "error"];
-
-    for (const level of levels) {
-      console[level] = (...args: unknown[]) => {
-        originals[level](...args);
-        const entry: LogEntry = {
-          id: ++idCounter,
-          level,
-          timestamp: Date.now(),
-          args: formatArgs(args),
-        };
-        setLogs((prev) => {
-          const next = [...prev, entry];
-          return next.length > maxEntries ? next.slice(-maxEntries) : next;
-        });
-      };
-    }
-
+    const listener = () => setLogs(entries);
+    listeners.add(listener);
+    listener();
     return () => {
-      for (const level of levels) {
-        console[level] = originals[level]!;
-      }
-      originalsRef.current = null;
+      listeners.delete(listener);
     };
-  }, [enabled, maxEntries]);
+  }, []);
+
+  const clear = useCallback(() => {
+    entries = [];
+    notify();
+  }, []);
 
   return { logs, clear };
 }
