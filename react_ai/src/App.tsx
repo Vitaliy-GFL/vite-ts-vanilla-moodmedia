@@ -4,6 +4,7 @@ import AspectRatioContainer from "@/components/AspectRatioContainer";
 import DebugModal from "@/components/DebugModal";
 import ErrorScreen from "@/components/ErrorScreen";
 import { DESIGN_WIDTH, DESIGN_HEIGHT } from "@/config/design";
+import { installConsoleCapture, uninstallConsoleCapture } from "@/hooks/useConsoleCapture";
 import { initTemplate, signalReady, signalError, waitForStart, getDuration } from "@/services/template-loader";
 import { useTemplateStore } from "@/store/templateStore";
 
@@ -15,10 +16,21 @@ function App() {
   const debugEnabled = useTemplateStore((s) => s.getParam<boolean>("debug", "enabled"));
 
   useEffect(() => {
+    // Console capture is on from the first line of main.tsx so early logs are
+    // not lost; once params are known, keep it only if debug is enabled.
+    function applyConsoleCapture() {
+      if (useTemplateStore.getState().getParam<boolean>("debug", "enabled")) {
+        installConsoleCapture();
+      } else {
+        uninstallConsoleCapture();
+      }
+    }
+
     async function bootstrap() {
       try {
         const components = await initTemplate();
         setComponents(components);
+        applyConsoleCapture();
 
         setDuration(getDuration());
         signalReady();
@@ -41,6 +53,7 @@ function App() {
         setComponents: (components) => {
           window.Loader.setComponents(components);
           setComponents(components);
+          applyConsoleCapture();
         },
         render: () => {
           /* re-render triggered via React state */

@@ -14,6 +14,7 @@ const MAX_ENTRIES = 200;
 let idCounter = 0;
 let entries: LogEntry[] = [];
 let installed = false;
+const originals: Partial<Record<LogLevel, (...args: unknown[]) => void>> = {};
 const listeners = new Set<() => void>();
 
 function formatArgs(args: unknown[]): string {
@@ -44,26 +45,40 @@ export function installConsoleCapture(): void {
 
   for (const level of levels) {
     const original = console[level].bind(console);
+    originals[level] = original;
     console[level] = (...args: unknown[]) => {
       original(...args);
-      const entry: LogEntry = {
+      // Mutate in place — a fresh array per log entry is needless GC pressure
+      // on low-end devices; subscribers copy on read instead (see the hook).
+      entries.push({
         id: ++idCounter,
         level,
         timestamp: Date.now(),
         args: formatArgs(args),
-      };
-      const next = [...entries, entry];
-      entries = next.length > MAX_ENTRIES ? next.slice(-MAX_ENTRIES) : next;
+      });
+      if (entries.length > MAX_ENTRIES) entries.shift();
       notify();
     };
   }
 }
 
+// Restores the original console methods. Called once mframe params are known
+// and debug is off, so production runs without any capture overhead.
+export function uninstallConsoleCapture(): void {
+  if (!installed) return;
+  installed = false;
+
+  for (const level of Object.keys(originals) as LogLevel[]) {
+    console[level] = originals[level]!;
+  }
+}
+
 export function useConsoleCapture() {
-  const [logs, setLogs] = useState<LogEntry[]>(entries);
+  const [logs, setLogs] = useState<LogEntry[]>(() => [...entries]);
 
   useEffect(() => {
-    const listener = () => setLogs(entries);
+    // entries is mutated in place, so copy to give React a fresh reference.
+    const listener = () => setLogs([...entries]);
     listeners.add(listener);
     listener();
     return () => {
