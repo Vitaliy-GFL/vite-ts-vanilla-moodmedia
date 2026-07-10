@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "vite",
     "lint": "oxlint .",
-    "fmt": "oxfmt -c .oxfmtrc.json src/",
-    "fmt:check": "oxfmt -c .oxfmtrc.json --check src/",
+    "fmt": "oxfmt -c .oxfmtrc.json src/ ./*.ts",
+    "fmt:check": "oxfmt -c .oxfmtrc.json --check src/ ./*.ts",
     "preview": "vite preview",
     "build": "npm run lint && npm run fmt:check && tsc -b && vite build && node scripts/compile.mjs",
     "build:simple": "tsc -b && vite build",
