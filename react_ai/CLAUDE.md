@@ -345,7 +345,9 @@ import { pxa, pxha, fonta } from "@/utils/px";
 
 ## Layout rules
 
-- When building menus/blocks, do NOT default to `position: absolute` for everything. Agree on the CSS layout approach with the user first: some menus should stretch to fill the free space (flex/flow), others must sit at a specific spot.
+- **Prefer `flex`/`grid` over `position: absolute`.** Use flow-based layout wherever possible so blocks free up or reclaim space when content changes in Harmony (e.g. a menu should grow/shrink and reflow its neighbours instead of overlapping them). Reach for `position: absolute` only for elements that genuinely must sit at a fixed spot.
+- **Discuss the CSS layout approach with the user before implementing.** Don't default to `position: absolute` for everything: some menus should stretch to fill the free space (flex/grid/flow), others must sit at a specific spot — agree on this first.
+- **Anchor spacing to the edge the element is pinned to.** For a banner fixed at the bottom, set the offset on the bottom (not the top); same for disclaimers, which usually sit at the bottom. When such a block's line count changes, the bottom offset must stay constant and the block should grow upward / shrink downward — anchor it to the bottom so its baseline doesn't move.
 - If a template contains several menus, add a dev-mode-only popup overlay to switch between them (for previewing each menu without rebuilding).
 
 ## Device constraints
