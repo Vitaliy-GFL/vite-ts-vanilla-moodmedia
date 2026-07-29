@@ -113,7 +113,7 @@ The `renderType` column lists valid values for `typeOptions.renderType`.
 | `string`         | string               | `renderType: "limited"` enables advanced options (see below) | Text input (single-line by default)                               |
 | `bool`           | boolean              | —                                                            | Toggle                                                            |
 | `int`            | number               | —                                                            | Integer                                                           |
-| `rangedInt`      | number               | `renderType: "slider"`, `min`, `max`, `step?`                | Single integer with slider constraints                            |
+| `rangedInt`      | number               | `min?`, `max?`, `step?`, `renderType: "slider"?`             | Integer with min/max/step constraints. All `typeOptions` optional — give only `min` (or `max`) to bound the value (e.g. forbid negatives) and it renders as a plain number input; add `renderType: "slider"` for a slider paired with a number input for manual entry |
 | `intRange`       | `{min, max}`         | `min`, `max`, `step?`                                        | User-selected sub-range within bounds                             |
 | `color`          | string               | —                                                            | Hex color, e.g. `"#ff0000"` (no alpha — see Device constraints)   |
 | `select`         | string               | `renderType`, `values: string[]`                             | Single choice. renderType: `btngroup`, `radio`, `fontSelect`, `fontSize`, `images` |
@@ -132,6 +132,15 @@ The `renderType` column lists valid values for `typeOptions.renderType`.
   "value": 0,
   "label": { "en-US": { "value": "X", "tooltip": "..." } },
   "typeOptions": { "renderType": "slider", "min": 0, "max": 100 }
+}
+
+// rangedInt — plain number input, min-only bound (forbids negatives / values below 11)
+{
+  "name": "charLimit",
+  "type": "rangedInt",
+  "value": 120,
+  "label": { "en-US": { "value": "Character Limit", "tooltip": "..." } },
+  "typeOptions": { "min": 11 }
 }
 
 // intRange — user picks a sub-range within bounds
