@@ -1,0 +1,49 @@
+// $design-width and $design-height are configured by Vite from src/config/design.ts
+// via `@use "functions" with (...)` in css.preprocessorOptions.scss.additionalData.
+// null (not real numbers) so an unconfigured load fails loudly instead of drifting.
+$design-width: null !default;
+$design-height: null !default;
+
+// Convert pixels to vw relative to $design-width
+@function px($value) {
+  @return calc($value / $design-width * 100vw);
+}
+
+// Convert pixels to vh relative to $design-height
+@function pxh($value) {
+  @return calc($value / $design-height * 100vh);
+}
+
+// Font size based on vh (scales with height)
+@function font($value) {
+  @return calc($value / $design-height * 100vh);
+}
+
+// Font size based on vw (scales with width)
+@function fontw($value) {
+  @return calc($value / $design-width * 100vw);
+}
+
+// --- Aspect-relative variants ---
+// Use inside AspectRatioContainer. They scale with the container's actual size,
+// which is published as the --aspect-w / --aspect-h CSS custom properties (in px).
+
+// Convert pixels to a width-relative length based on AspectRatioContainer
+@function pxa($value) {
+  @return calc($value / $design-width * var(--aspect-w));
+}
+
+// Convert pixels to a height-relative length based on AspectRatioContainer
+@function pxha($value) {
+  @return calc($value / $design-height * var(--aspect-h));
+}
+
+// Font size based on AspectRatioContainer height
+@function fonta($value) {
+  @return calc($value / $design-height * var(--aspect-h));
+}
+
+// Font size based on AspectRatioContainer width
+@function fontwa($value) {
+  @return calc($value / $design-width * var(--aspect-w));
+}

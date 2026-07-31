@@ -1,0 +1,5 @@
+{
+  "/assets": ["dist/assets"],
+  "/fonts": ["dist/fonts"],
+  "/images": ["dist/images"]
+}
