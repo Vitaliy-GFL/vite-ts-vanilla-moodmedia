@@ -2,6 +2,8 @@
 
 API is available through wrappers in `src/services/api/`. Playback API works **only after `isStarted()`**.
 
+`createCustomZone(zoneName, left, top, width, height, ...)` — `left`/`top`/`width`/`height` are **percent** of the zone area, not pixels (e.g. `25, 25, 50, 50` = a 50%×50% zone centered on screen).
+
 Callback functions for `playlist.ts` and `p2p.ts` are registered on the global scope via `Object.defineProperty` — this is an Android Player requirement. For the same reason, Terser is configured to preserve identifiers (`keep_fnames` and `keep_classnames` in `vite.config.ts`) — the Player looks up callbacks by name and minified names break it. Don't change.
 
 ## P2PClient
