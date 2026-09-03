@@ -11,6 +11,7 @@ This file is the always-loaded overview. Read the relevant sub-doc on demand —
 - [`docs/mframe.md`](docs/mframe.md) — `mframe.json` config: structure, rules, parameter types & `typeOptions`, examples, advanced string options, how to add params/components, reading params in code. **Read when** editing `public/mframe.json` or wiring a Harmony parameter.
 - [`docs/player-api.md`](docs/player-api.md) — Player API wrappers (`src/services/api/`) and the `P2PClient` class. **Read when** using Playback/Playlist/P2P/Analytics APIs or touching global callback registration.
 - [`docs/styling.md`](docs/styling.md) — `AspectRatioContainer`, design dimensions, px-to-vw/vh helpers (Sass + JS), and layout rules. **Read when** writing any CSS/Sass or laying out content.
+- [`README.md`](README.md) — human-facing guide: setup, dev server & URL params, build/packaging, debug console, troubleshooting, plus a section for Harmony users. **Read when** the user asks how to run, build or ship the template, or when editing this guide.
 
 ## Stack
 
