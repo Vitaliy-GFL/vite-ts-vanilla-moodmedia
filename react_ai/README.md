@@ -209,7 +209,7 @@ Players run old embedded browsers on weak hardware. Do not:
 
 | Symptom                                       | Cause / what to check                                                                                                                      |
 | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| Nothing renders, no error                     | `isStarted()` hasn't resolved. Locally: did you open the page with `?autoPlay=false`? On a player: the zone hasn't shown the template yet. |
+| Nothing renders, no error                     | `isStarted()` hasn't resolved — on a player the zone hasn't put the template on screen yet. |
 | Nothing happens at all, no logs               | `window.Loader` is missing — `mtemplate-loader` didn't load. Check the imports at the top of `main.tsx`.                                   |
 | `Template configuration load timed out`       | `getComponents()` took longer than 2 s — usually `mframe.json` is missing, unreachable, or invalid JSON.                                   |
 | `Template Error` screen                       | Init failed or a component threw; the reason is on screen and in the debug console.                                                        |
