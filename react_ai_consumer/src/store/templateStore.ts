@@ -1,6 +1,6 @@
-import { create } from "zustand";
-
 import type { MframeComponent } from "@visualsolutions/player-api/types";
+
+import { create } from "zustand";
 
 const buildParamMap = (components: MframeComponent[]): Map<string, unknown> => {
   const map = new Map<string, unknown>();

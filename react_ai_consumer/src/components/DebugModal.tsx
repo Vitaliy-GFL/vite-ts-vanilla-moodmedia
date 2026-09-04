@@ -1,8 +1,8 @@
+import { openDevTools } from "@visualsolutions/player-api/debug";
+import { P2PClient } from "@visualsolutions/player-api/p2p";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useConsoleCapture, type LogLevel } from "@/hooks/useConsoleCapture";
-import { openDevTools } from "@visualsolutions/player-api/debug";
-import { P2PClient } from "@visualsolutions/player-api/p2p";
 
 import "./DebugModal.scss";
 
