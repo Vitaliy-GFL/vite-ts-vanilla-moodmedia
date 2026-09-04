@@ -55,7 +55,7 @@ The `renderType` column lists valid values for `typeOptions.renderType`.
 | `rangedInt`      | number               | `min?`, `max?`, `step?`, `renderType: "slider"?`             | Integer with min/max/step constraints. All `typeOptions` optional — give only `min` (or `max`) to bound the value (e.g. forbid negatives) and it renders as a plain number input; add `renderType: "slider"` for a slider paired with a number input for manual entry |
 | `intRange`       | `{min, max}`         | `min`, `max`, `step?`                                        | User-selected sub-range within bounds                             |
 | `color`          | string               | —                                                            | Hex color, e.g. `"#ff0000"` (no alpha — see Device constraints)   |
-| `select`         | string               | `renderType`, `values: string[]`                             | Single choice. renderType: `btngroup`, `radio`, `fontSelect`, `fontSize`, `images` |
+| `select`         | string               | `renderType`, `values: string[]`                             | Single choice. renderType: `btngroup`, `radio`                    |
 | `imageReference` | `string[]`           | —                                                            | Image paths picked via Harmony UI                                 |
 | `mediaReference` | `number[]`           | —                                                            | Media IDs, used with `getPlaylistItems`                           |
 | `array`          | `string[]`           | —                                                            | Free-form list of user-entered strings                            |
