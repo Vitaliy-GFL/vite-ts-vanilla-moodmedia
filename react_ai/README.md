@@ -38,24 +38,16 @@ In the browser there is no real player, so the `mtemplate-loader` SDK stands in 
 - `getComponents()` fetches `public/mframe.json` over HTTP
 - `isStarted()` resolves **immediately**, so the template starts right away
 
-Useful URL parameters the loader reads (append to `main.html`):
-
-| Parameter        | Effect                                                                  |
-| ---------------- | ----------------------------------------------------------------------- |
-| `?autoPlay=false` | `isStarted()` never resolves — lets you inspect the pre-start state     |
-| `?duration=15000` | Sets the duration returned by `getDuration()` (ms)                      |
-| `?platformType=`  | Emulates a platform type (e.g. `WebStreaming`)                          |
-
 Editing `public/mframe.json` triggers a full page reload, so parameter changes show up immediately.
 
 ### Where to put your content
 
-| What you want to change     | File                                             |
-| --------------------------- | ------------------------------------------------ |
-| Markup / template content   | `src/App.tsx` — inside `<AspectRatioContainer>`  |
+| What you want to change     | File                                              |
+| --------------------------- | ------------------------------------------------- |
+| Markup / template content   | `src/App.tsx` — inside `<AspectRatioContainer>`   |
 | Styles                      | `src/styles/`, or a `.scss` next to the component |
 | Design canvas size          | `src/config/design.ts` (`1920 × 1080` by default) |
-| Harmony-configurable params | `public/mframe.json`                             |
+| Harmony-configurable params | `public/mframe.json`                              |
 
 `AspectRatioContainer` keeps your content at a fixed aspect ratio when the player zone has a
 different shape, and publishes its real rendered size as `--aspect-w` / `--aspect-h` so the
@@ -101,14 +93,14 @@ worked examples are in [`docs/mframe.md`](docs/mframe.md).
 
 Wrappers live in `src/services/api/` and are safe to call **only after `isStarted()`**:
 
-| Module             | What it covers                                                     |
-| ------------------ | ------------------------------------------------------------------- |
+| Module             | What it covers                                                       |
+| ------------------ | -------------------------------------------------------------------- |
 | `playback.ts`      | `openMediaInZone`, `createCustomZone`, stop/resume, playback actions |
-| `playlist.ts`      | `getPlaylistItems`, item schedules, media availability              |
-| `p2p.ts`           | `P2PClient` — pub/sub between players, auto ping/pong               |
+| `playlist.ts`      | `getPlaylistItems`, item schedules, media availability               |
+| `p2p.ts`           | `P2PClient` — pub/sub between players, auto ping/pong                |
 | `analytics.ts`     | `AnalyticsClient` — session handling, `createEvent`                  |
-| `player-params.ts` | `getPlayerParameters`                                               |
-| `debug.ts`         | `openDevTools`                                                      |
+| `player-params.ts` | `getPlayerParameters`                                                |
+| `debug.ts`         | `openDevTools`                                                       |
 
 Details and gotchas (percent-based custom zones, why callbacks are registered globally) are in
 [`docs/player-api.md`](docs/player-api.md).
@@ -150,13 +142,56 @@ What `scripts/compile.mjs` does around `mtemplate compile`: copies `public/mfram
 `dist/index.html` to the repo root (where the CLI expects them), deletes the sourcemaps from
 `dist/assets` so they stay out of the zip, runs the CLI, then removes the temporary root files.
 
-The zip contains `mframe.json`, `index.html`, `mtemplate.json`, `package.json` and the directories
-mapped in `mtemplate.json` (`/assets`, `/fonts`, `/images` ← `dist/…`). To ship fonts or images, put
-them in `public/fonts/` or `public/images/` — Vite copies `public/` into `dist/`, and the mapping
-picks them up from there.
-
 Two build settings must stay as they are: `keep_fnames` and `keep_classnames` in `vite.config.ts`.
 The Android player looks up P2P callbacks **by function name**, and minified names break it.
+
+### `mtemplate.json` — what goes into the zip
+
+`mtemplate compile` reads `mtemplate.json` to decide which built folders end up in the archive and
+where:
+
+```json
+{
+  "/assets": ["dist/assets"],
+  "/fonts": ["dist/fonts"],
+  "/images": ["dist/images"]
+}
+```
+
+- **Key** — the destination folder inside the zip. **It must start with `/`** — the CLI strips the
+  first character of every entry path, so `"assets"` without the slash would produce broken names
+  like `ssets/index.js`.
+- **Value** — a list of source folders, relative to the repo root. Their **contents** are copied,
+  not the folder itself: `dist/assets/index.js` → `assets/index.js` in the zip. Subfolders are kept.
+- Several sources can feed one destination — they are merged into that folder.
+- A source that does not exist is skipped silently. That's why `/fonts` and `/images` can stay listed
+  even though this template has no such folders yet — add the folders and they're picked up.
+
+Regardless of this file, compile always adds `mframe.json`, `index.html`, `mtemplate.json` and
+`package.json` at the zip root.
+
+Two gotchas in the CLI worth knowing:
+
+- **Map folders, not files.** An entry pointing at a single file (`"/fonts": ["dist/my.woff2"]`)
+  crashes `mtemplate compile` with a `ReferenceError` — that code path is broken upstream. Always
+  map the parent folder.
+- **Keep asset filenames ASCII.** A path containing non-ASCII characters skips the CLI's path
+  normalization and lands in the zip with a leading `/`, which the player won't resolve.
+
+**When you need to touch this file:** only when the zip gains a new top-level folder, or when
+`build.assetsDir` changes in `vite.config.ts` (the key must match the folder name the built
+`index.html` references — `assets` by default).
+
+Adding fonts or images, in practice:
+
+1. Put the files in `public/fonts/` or `public/images/` — Vite copies `public/` into `dist/` on
+   build, giving you `dist/fonts/` and `dist/images/`
+2. The existing `/fonts` and `/images` entries pick them up, so `mtemplate.json` needs no change
+3. Check `dist/` after a build to confirm the URLs in the built CSS/HTML match where the files
+   actually landed
+
+Assets imported from `src/` (e.g. `import logo from "./logo.png"`) need nothing at all — Vite emits
+them into `dist/assets/`, which is already mapped.
 
 ### Device constraints
 
@@ -172,15 +207,15 @@ Players run old embedded browsers on weak hardware. Do not:
 
 ### Troubleshooting
 
-| Symptom                                        | Cause / what to check                                                                                        |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Nothing renders, no error                      | `isStarted()` hasn't resolved. Locally: did you open the page with `?autoPlay=false`? On a player: the zone hasn't shown the template yet. |
-| Nothing happens at all, no logs                | `window.Loader` is missing — `mtemplate-loader` didn't load. Check the imports at the top of `main.tsx`.     |
-| `Template configuration load timed out`        | `getComponents()` took longer than 2 s — usually `mframe.json` is missing, unreachable, or invalid JSON.      |
-| `Template Error` screen                        | Init failed or a component threw; the reason is on screen and in the debug console.                          |
-| Parameter reads as `undefined`                 | Component or parameter `name` doesn't match `mframe.json` exactly (both are case-sensitive).                 |
-| P2P works in dev but not on an Android player  | Minified callback names — verify `keep_fnames` / `keep_classnames` are still set in `vite.config.ts`.        |
-| Layout is right in dev, cropped on the player  | The zone's aspect ratio differs from the design ratio. Use the aspect-relative helpers (`pxa`, `fonta`).      |
+| Symptom                                       | Cause / what to check                                                                                                                      |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Nothing renders, no error                     | `isStarted()` hasn't resolved. Locally: did you open the page with `?autoPlay=false`? On a player: the zone hasn't shown the template yet. |
+| Nothing happens at all, no logs               | `window.Loader` is missing — `mtemplate-loader` didn't load. Check the imports at the top of `main.tsx`.                                   |
+| `Template configuration load timed out`       | `getComponents()` took longer than 2 s — usually `mframe.json` is missing, unreachable, or invalid JSON.                                   |
+| `Template Error` screen                       | Init failed or a component threw; the reason is on screen and in the debug console.                                                        |
+| Parameter reads as `undefined`                | Component or parameter `name` doesn't match `mframe.json` exactly (both are case-sensitive).                                               |
+| P2P works in dev but not on an Android player | Minified callback names — verify `keep_fnames` / `keep_classnames` are still set in `vite.config.ts`.                                      |
+| Layout is right in dev, cropped on the player | The zone's aspect ratio differs from the design ratio. Use the aspect-relative helpers (`pxa`, `fonta`).                                   |
 
 ### Further reading
 
