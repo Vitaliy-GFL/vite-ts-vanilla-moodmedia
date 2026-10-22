@@ -49,13 +49,13 @@ The `renderType` column lists valid values for `typeOptions.renderType`.
 
 | type             | value type           | typeOptions                                                  | Description                                                       |
 | ---------------- | -------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------- |
-| `string`         | string               | `renderType: "limited"` enables advanced options (see below) | Text input (single-line by default)                               |
+| `string`         | string               | —                                                            | Text input, single-line. For multi-line text see "Multiline strings" below |
 | `bool`           | boolean              | —                                                            | Toggle                                                            |
 | `int`            | number               | —                                                            | Integer                                                           |
 | `rangedInt`      | number               | `min?`, `max?`, `step?`, `renderType: "slider"?`             | Integer with min/max/step constraints. All `typeOptions` optional — give only `min` (or `max`) to bound the value (e.g. forbid negatives) and it renders as a plain number input; add `renderType: "slider"` for a slider paired with a number input for manual entry |
 | `intRange`       | `{min, max}`         | `min`, `max`, `step?`                                        | User-selected sub-range within bounds                             |
 | `color`          | string               | —                                                            | Hex color, e.g. `"#ff0000"` (no alpha — see Device constraints)   |
-| `select`         | string               | `renderType`, `values: string[]`                             | Single choice. renderType: `btngroup`, `radio`                    |
+| `select`         | string               | `renderType: "radio"`, `values: string[]`                     | Single choice. Other renderTypes (`btngroup`, `fontSelect`, `fontSize`, `images`) render broken in the Harmony editor — do not use |
 | `imageReference` | `string[]`           | —                                                            | Image paths picked via Harmony UI                                 |
 | `mediaReference` | `number[]`           | —                                                            | Media IDs, used with `getPlaylistItems`                           |
 | `array`          | `string[]`           | —                                                            | Free-form list of user-entered strings                            |
@@ -91,14 +91,14 @@ The `renderType` column lists valid values for `typeOptions.renderType`.
   "typeOptions": { "min": 10, "max": 100, "step": 1 }
 }
 
-// select — single choice rendered as a button group
+// select — single choice rendered as radio buttons
 {
   "name": "textTransform",
   "type": "select",
   "value": "none",
   "label": { "en-US": { "value": "Text Case", "tooltip": "..." } },
   "typeOptions": {
-    "renderType": "btngroup",
+    "renderType": "radio",
     "values": ["none", "uppercase", "capitalize", "lowercase"]
   }
 }
@@ -113,44 +113,15 @@ The `renderType` column lists valid values for `typeOptions.renderType`.
 }
 ```
 
-## Advanced string options (`renderType: "limited"`)
+## Multiline strings
 
-Setting `typeOptions.renderType: "limited"` on a `string` param enables multiline input and/or a character limit. Both features are configured via **sibling parameters in the same component** and apply to **every** `limited` string in that component:
+Do not use `renderType: "limited"`, `multiline` or `maxCharacters` — they render broken in the Harmony editor. Instead keep a plain `string` and write a literal `\n` for a line break (in `mframe.json` that is `"\\n"`; Harmony shows it as `\n`), then split it in code:
 
-- **Multiline** — add a `bool` param named `multiline` with `value: true`. The string preserves line breaks.
-- **Character limit** — add an `int` param named `maxCharacters` with `typeOptions.renderType: "maxCharacters"` and `value` = the limit.
-
-Both helper params can have `locked: true` to hide them from the Visuals UI.
-
-```jsonc
-{
-  "name": "textBlock",
-  "params": [
-    {
-      "name": "body",
-      "type": "string",
-      "value": "Multi\nline\ntext",
-      "label": { "en-US": { "value": "Body", "tooltip": "..." } },
-      "typeOptions": { "renderType": "limited" }
-    },
-    {
-      "name": "multiline",
-      "type": "bool",
-      "value": true,
-      "locked": true,
-      "label": { "en-US": { "value": "Multiline", "tooltip": "..." } }
-    },
-    {
-      "name": "maxCharacters",
-      "type": "int",
-      "value": 280,
-      "locked": true,
-      "label": { "en-US": { "value": "Max chars", "tooltip": "..." } },
-      "typeOptions": { "renderType": "maxCharacters" }
-    }
-  ]
-}
+```ts
+const lines = text.split(/\\n|\r?\n/); // accepts both the literal \n and real newlines
 ```
+
+Mention it in the tooltip, e.g. `"Use \\n for a line break"`.
 
 ## Current mframe.json
 
