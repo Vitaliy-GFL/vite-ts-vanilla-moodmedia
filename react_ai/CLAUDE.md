@@ -18,7 +18,7 @@ This file is the always-loaded overview. Read the relevant sub-doc on demand —
 - Vite, React, TypeScript, Sass, Zustand
 - `mtemplate-loader` — SDK for Player communication (available as `window.Loader`)
 - `mtemplate` — CLI to compile the template into a zip for uploading to Harmony
-- `@vitejs/plugin-legacy` — transpilation for chrome 89+ (older devices)
+- `@vitejs/plugin-legacy` — transpilation for chrome 89+ (older devices); ELO players need `chrome 74`, see Device constraints
 
 ## Project structure
 
@@ -78,6 +78,17 @@ Initialization order in `App.tsx` is **mandatory**:
 - Use `transform` instead of `top`/`left` for animations
 - `touchstart` works better than `click` on players
 - `Node.appendChild()` instead of `ParentNode.append()`
+
+### ELO players (Android 7.1.2)
+
+Learned on Dyson PC-921 (mvision-templates, `custom/Dyson/PC/Apps/react_versions/Dyson-PC-921`):
+
+- **The player renders with Chrome 74.** The page's user agent says `Chrome/74`, although Android settings show System WebView 89. Trust the UA, not the settings screen.
+- **The default `chrome 89` target does not run there.** `?.` and `??` (Chrome 80) stay in `index-legacy-*.js`, the script fails with `Unexpected token .` and the template shows a black screen (or only its static preview). For ELO set `legacy({ renderModernChunks: false, targets: ["chrome 74"] })` in `vite.config.ts`.
+- **No CSS newer than Chrome 74 either:** no flex `gap` (84; use margins), `inset` (87) or `aspect-ratio` (88); `min()`/`max()`/`clamp()` (79) are already banned above.
+- **The template is served from `http://127.0.0.1`, not `file://`.** Leave `crossorigin` on the script tags: it is not the cause of a black screen, and without it the bundle starts running in the Harmony editor preview, where `getComponents()` gets no answer.
+- **`chrome://inspect` does not reach the player.** To see why a build fails on the device, put an inline script in `main.html` that collects `error`/`unhandledrejection` events and, if the app has not started within ~15 s, prints `location.href`, `navigator.userAgent` and the errors over the page (Dyson PC-921's `main.html` has one).
+- **Check the bundle after the build:** parse `dist/assets/index-legacy-*.js` (e.g. with acorn) and look for syntax newer than the target (optional chaining, `??`, logical assignment).
 
 ## Commands
 

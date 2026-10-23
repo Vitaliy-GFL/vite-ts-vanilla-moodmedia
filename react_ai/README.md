@@ -205,6 +205,8 @@ Players run old embedded browsers on weak hardware. Do not:
 - animate `top` / `left` — animate `transform`
 - use `ParentNode.append()` (use `Node.appendChild()`) or rely on `click` where `touchstart` works better
 
+**ELO players** (Android 7.1.2) render with **Chrome 74**: the page's user agent says so, even though Android settings show WebView 89. The default `chrome 89` legacy target leaves `?.`/`??` in the bundle and the template stays black. For ELO build with `targets: ["chrome 74"]` in `vite.config.ts` and don't use flex `gap` (space items with margins). Details: [`CLAUDE.md`](CLAUDE.md) → *Device constraints*.
+
 ### Troubleshooting
 
 | Symptom                                       | Cause / what to check                                                                                                                      |
@@ -215,6 +217,7 @@ Players run old embedded browsers on weak hardware. Do not:
 | `Template Error` screen                       | Init failed or a component threw; the reason is on screen and in the debug console.                                                        |
 | Parameter reads as `undefined`                | Component or parameter `name` doesn't match `mframe.json` exactly (both are case-sensitive).                                               |
 | P2P works in dev but not on an Android player | Minified callback names — verify `keep_fnames` / `keep_classnames` are still set in `vite.config.ts`.                                      |
+| Black screen or only the preview on ELO       | The player renders with Chrome 74 (check the UA, not the WebView version in Android settings). Build with `targets: ["chrome 74"]`; no flex `gap`. |
 | Layout is right in dev, cropped on the player | The zone's aspect ratio differs from the design ratio. Use the aspect-relative helpers (`pxa`, `fonta`).                                   |
 
 ### Further reading
