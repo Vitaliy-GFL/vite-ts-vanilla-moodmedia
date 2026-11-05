@@ -14,7 +14,7 @@
     "compile": "node scripts/compile.mjs"
   },
   "dependencies": {
-    "@visualsolutions/player-api": "^1.0.0",
+    "@visualsolutions/player-api": "^1.1.0",
     "mtemplate-loader": "^2.0.40",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",

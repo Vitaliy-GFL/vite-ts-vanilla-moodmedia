@@ -4,6 +4,8 @@ API is available through wrappers from `@visualsolutions/player-api`, imported p
 
 `createCustomZone(zoneName, left, top, width, height, ...)` — `left`/`top`/`width`/`height` are **percent** of the zone area, not pixels (e.g. `25, 25, 50, 50` = a 50%×50% zone centered on screen).
 
+`persistent` (6th argument, before `behind`) defaults to `false`: leave it so, and pass `true` only when the task explicitly asks for a persistent zone. Non-persistent zones created with the wrapper's `createCustomZone()` and not removed with its `deleteCustomZone()` are stopped and deleted by the package on `beforeunload`, so the template does not need its own `beforeunload` handler for them. Persistent zones, and zones created directly via `window.Loader`, are left in place.
+
 The `playlist` and `p2p` wrappers register callback functions on the global scope via `Object.defineProperty` — this is an Android Player requirement. Those callbacks live inside the package, but they are bundled into **this** template, so Terser here must preserve identifiers (`keep_fnames` and `keep_classnames` in `vite.config.ts`) — the Player looks up callbacks by name and minified names break it. Don't change.
 
 ## P2PClient
