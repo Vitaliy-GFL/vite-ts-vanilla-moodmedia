@@ -17,3 +17,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     </ErrorBoundary>
   </React.StrictMode>,
 );
+
+// The bundle parsed and ran — tells the crash reporter in main.html not to show its overlay: from
+// here on failures get their own screen (ErrorScreen).
+if (window.mvCrashReport) window.mvCrashReport.started = true;

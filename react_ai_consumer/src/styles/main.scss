@@ -17,7 +17,6 @@ body {
 
   &--error {
     flex-direction: column;
-    gap: 1vh;
     background: #1a0000;
   }
 
@@ -27,11 +26,37 @@ body {
     font-weight: bold;
   }
 
+  // Margins, not flex `gap`: Chrome 74 (ELO) has no gap, and this screen is what diagnoses it.
+  &__error-message,
+  &__error-info,
+  &__error-stack {
+    margin-top: 1vh;
+  }
+
   &__error-message {
     color: #ccc;
     font-size: 1.8vh;
     max-width: 80vw;
     text-align: center;
     word-break: break-word;
+  }
+
+  &__error-info {
+    color: #888;
+    font-size: 1.4vh;
+    max-width: 80vw;
+    text-align: center;
+    word-break: break-word;
+  }
+
+  &__error-stack {
+    color: #ccc;
+    font-family: monospace;
+    font-size: 1.4vh;
+    max-width: 80vw;
+    max-height: 50vh;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
   }
 }

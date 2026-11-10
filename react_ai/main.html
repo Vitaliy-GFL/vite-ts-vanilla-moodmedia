@@ -4,6 +4,85 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Harmony Template</title>
+    <script>
+      // Crash reporter. Plain ES5 and outside the bundle on purpose: it has to work when the bundle
+      // itself fails to parse on an old engine. It collects every uncaught error with its file, line
+      // and stack. On a player (a `data` URL parameter; the Harmony editor has none), if the app has
+      // not started within 15 s, it prints the browser, the URL and the errors over the page. After
+      // the start the bundle takes the errors into DebugModal (see useConsoleCapture.ts).
+      (function () {
+        var report = (window.mvCrashReport = { errors: [], started: false, onError: null });
+
+        function add(text) {
+          if (!report.started && report.errors.length < 50) report.errors.push(text);
+          if (report.onError) report.onError(text);
+        }
+
+        window.addEventListener(
+          "error",
+          function (e) {
+            var t = e.target;
+            if (t && t !== window) {
+              var url = t.src || t.currentSrc || t.href;
+              if (url && typeof url !== "string") url = url.baseVal; // SVG <image>
+              add("Failed to load " + String(url || t.tagName).slice(0, 300));
+              return;
+            }
+            var stack = e.error && e.error.stack;
+            var where = "\n    @ " + (e.filename || "?") + ":" + e.lineno + ":" + e.colno;
+            add((e.message || "Error") + where + (stack ? "\n" + stack : ""));
+          },
+          true
+        );
+        window.addEventListener("unhandledrejection", function (e) {
+          var r = e.reason;
+          var text = r && r.stack;
+          // Only V8 puts the message at the top of the stack.
+          if (r && r.message && String(text).indexOf(r.message) < 0) text = r.message + (text ? "\n" + text : "");
+          if (!text) {
+            try {
+              text = typeof r === "object" ? JSON.stringify(r) : String(r);
+            } catch (err) {
+              text = String(r);
+            }
+          }
+          add("Unhandled rejection: " + text);
+        });
+
+        setTimeout(function () {
+          if (report.started || !/[?&]data(=|&|#|$)/.test(location.href)) return;
+          var box = document.createElement("pre");
+          box.style.cssText =
+            "position:fixed;left:0;right:0;bottom:0;max-height:60%;overflow:auto;margin:0;padding:1vh;" +
+            "background:#000;color:#0f0;font:1.4vh monospace;white-space:pre-wrap;word-break:break-all;z-index:99999";
+          document.body.appendChild(box);
+
+          var printed = -1;
+          function print() {
+            if (printed === report.errors.length) return;
+            printed = report.errors.length;
+            box.textContent = [
+              "Template crashed: the app did not start.",
+              "Browser: " + (navigator.userAgent.match(/Chrome\/[\d.]+/) || ["unknown"])[0].replace("/", " "),
+              "UA: " + navigator.userAgent,
+              "URL: " + location.href,
+              "System: " + typeof window.System + ", Loader: " + typeof window.Loader,
+            ]
+              .concat(report.errors)
+              .join("\n");
+          }
+          print();
+
+          // Errors can still arrive, and a slow device can still start the app after the overlay is
+          // up: keep the list current, take the overlay down once the app starts.
+          var timer = setInterval(function () {
+            if (!report.started) return print();
+            clearInterval(timer);
+            document.body.removeChild(box);
+          }, 1000);
+        }, 15000);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -19,12 +19,13 @@ interface TemplateState {
   isReady: boolean;
   duration: number;
   error: string | null;
+  errorStack?: string;
 
   setComponents: (components: MframeComponent[]) => void;
   setStarted: (started: boolean) => void;
   setReady: (ready: boolean) => void;
   setDuration: (duration: number) => void;
-  setError: (error: string) => void;
+  setError: (error: string, stack?: string) => void;
 
   getParam: <T = unknown>(componentName: string, paramName: string) => T | undefined;
 }
@@ -41,7 +42,7 @@ export const useTemplateStore = create<TemplateState>((set, get) => ({
   setStarted: (started) => set({ isStarted: started }),
   setReady: (ready) => set({ isReady: ready }),
   setDuration: (duration) => set({ duration }),
-  setError: (error) => set({ error }),
+  setError: (error, stack) => set({ error, errorStack: stack }),
 
   getParam: <T = unknown>(componentName: string, paramName: string): T | undefined =>
     get().paramMap.get(`${componentName}.${paramName}`) as T | undefined,

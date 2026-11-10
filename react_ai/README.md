@@ -117,14 +117,27 @@ Turn it on by setting `debug.enabled` to `true` — in `public/mframe.json` for 
 - `</>` asks the player to open its own DevTools
 - `P2P` sends a loopback P2P message — a quick check that P2P works on the device
 - Keeps the last 200 entries
+- The header shows the browser version from the user agent (the engine the player really uses);
+  expanded, a line under the filters shows the full user agent
 
 `console.log/warn/error` are captured from the very first line of `main.tsx`, so messages logged
-before the overlay mounts are not lost. Once the parameters are known and `debug.enabled` is
-`false`, the capture is uninstalled and the original `console` methods are restored — no overhead
-in production.
+before the overlay mounts are not lost. Uncaught errors, unhandled promise rejections and resources
+that failed to load appear there too, as `ERR` entries with the file, line and stack. Once the
+parameters are known and `debug.enabled` is `false`, the capture is uninstalled and the original
+`console` methods are restored — no overhead in production.
 
-If the template fails to initialize or a render throws, an error screen appears with the message and
-keeps the debug console visible (it defaults to visible there, even if the parameters never loaded).
+### Crash reporting
+
+- **The template fails to initialize or a render throws:** an error screen appears with the message,
+  the browser version, the user agent and the stack trace. It keeps the debug console visible (it
+  defaults to visible there, even if the parameters never loaded).
+- **The app does not start at all** (the bundle failed to load or parse, e.g. its syntax is too new
+  for the player's engine): a small script in `main.html` prints the browser, the URL and every
+  error with its file and line over the page, 15 s after load. It does this only on a player (a
+  `data` parameter in the URL), not in the dev server or the Harmony editor.
+
+Stack traces of a build point into the minified `index-legacy-*.js`. `npm run build` removes the
+`.map` files; to resolve a trace, check out the same commit and run `npm run build:simple`.
 
 ### Build & package
 
@@ -214,10 +227,11 @@ Players run old embedded browsers on weak hardware. Do not:
 | Nothing renders, no error                     | `isStarted()` hasn't resolved — on a player the zone hasn't put the template on screen yet. |
 | Nothing happens at all, no logs               | `window.Loader` is missing — `mtemplate-loader` didn't load. Check the imports at the top of `main.tsx`.                                   |
 | `Template configuration load timed out`       | `getComponents()` took longer than 2 s — usually `mframe.json` is missing, unreachable, or invalid JSON.                                   |
-| `Template Error` screen                       | Init failed or a component threw; the reason is on screen and in the debug console.                                                        |
+| `Template Error` screen                       | Init failed or a component threw; the reason, the browser and the stack trace are on screen and in the debug console.                      |
 | Parameter reads as `undefined`                | Component or parameter `name` doesn't match `mframe.json` exactly (both are case-sensitive).                                               |
 | P2P works in dev but not on an Android player | Minified callback names — verify `keep_fnames` / `keep_classnames` are still set in `vite.config.ts`.                                      |
 | Black screen or only the preview on ELO       | The player renders with Chrome 74 (check the UA, not the WebView version in Android settings). Build with `targets: ["chrome 74"]`; no flex `gap`. |
+| Green text `Template crashed: the app did not start` | The bundle did not run. The text lists the browser and the error with its file and line — usually syntax newer than the player's engine. |
 | Layout is right in dev, cropped on the player | The zone's aspect ratio differs from the design ratio. Use the aspect-relative helpers (`pxa`, `fonta`).                                   |
 
 ### Further reading

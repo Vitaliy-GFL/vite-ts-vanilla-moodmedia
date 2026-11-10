@@ -12,7 +12,8 @@ import "./styles/main.scss";
 import { pxa } from "./utils/px";
 
 function App() {
-  const { isStarted, error, setComponents, setStarted, setReady, setDuration, setError } = useTemplateStore();
+  const { isStarted, error, errorStack, setComponents, setStarted, setReady, setDuration, setError } =
+    useTemplateStore();
   const debugEnabled = useTemplateStore((s) => s.getParam<boolean>("debug", "enabled"));
 
   useEffect(() => {
@@ -40,9 +41,9 @@ function App() {
         setStarted(true);
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
-        console.error("Template init error:", message);
+        console.error("Template init error:", err);
         signalError("Failed to load template configuration: " + message);
-        setError("Failed to load template configuration: " + message);
+        setError("Failed to load template configuration: " + message, err instanceof Error ? err.stack : undefined);
       }
     }
 
@@ -63,7 +64,7 @@ function App() {
   }, [setComponents, setStarted, setReady, setDuration, setError]);
 
   if (error) {
-    return <ErrorScreen message={error} />;
+    return <ErrorScreen message={error} stack={errorStack} />;
   }
 
   if (!isStarted) {

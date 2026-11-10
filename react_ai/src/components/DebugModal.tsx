@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useConsoleCapture, type LogLevel } from "@/hooks/useConsoleCapture";
 import { openDevTools } from "@/services/api/debug";
 import { P2PClient } from "@/services/api/p2p";
+import { BROWSER } from "@/utils/browser";
 
 import "./DebugModal.scss";
 
@@ -17,6 +18,8 @@ const LEVEL_LABELS: Record<LogLevel, string> = {
   warn: "WRN",
   error: "ERR",
 };
+
+const BROWSER_SHORT = BROWSER.split(".")[0];
 
 function formatTime(ts: number): string {
   const d = new Date(ts);
@@ -121,12 +124,14 @@ export default function DebugModal() {
       style={{
         left: pos.x,
         top: pos.y,
-        width: collapsed ? 280 : size.w,
+        width: collapsed ? 320 : size.w,
         height: collapsed ? "auto" : size.h,
       }}
     >
       <div className="debug-modal__header" onPointerDown={onPointerDown("drag")}>
-        <span className="debug-modal__title">Debug v{__APP_VERSION__}</span>
+        <span className="debug-modal__title">
+          Debug v{__APP_VERSION__} · {BROWSER_SHORT}
+        </span>
         <div className="debug-modal__header-actions">
           <button className="debug-modal__btn" onClick={openDevTools} title="DevTools">
             &lt;/&gt;
@@ -161,6 +166,8 @@ export default function DebugModal() {
               P2P
             </button>
           </div>
+
+          <div className="debug-modal__ua">{navigator.userAgent}</div>
 
           <div className="debug-modal__logs">
             {filtered.map((entry) => (

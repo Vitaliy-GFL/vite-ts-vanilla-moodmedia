@@ -1,11 +1,13 @@
 import DebugModal from "@/components/DebugModal";
 import { useTemplateStore } from "@/store/templateStore";
+import { BROWSER } from "@/utils/browser";
 
 interface ErrorScreenProps {
   message: string;
+  stack?: string;
 }
 
-export default function ErrorScreen({ message }: ErrorScreenProps) {
+export default function ErrorScreen({ message, stack }: ErrorScreenProps) {
   // This screen is the ErrorBoundary fallback — it must never throw itself, and
   // mframe may not have loaded at all. On any doubt, default to showing the console.
   const debugEnabled =
@@ -22,6 +24,12 @@ export default function ErrorScreen({ message }: ErrorScreenProps) {
       {debugEnabled && <DebugModal />}
       <p className="app__error-title">Template Error</p>
       <p className="app__error-message">{message}</p>
+      <p className="app__error-info">
+        {BROWSER}
+        <br />
+        {navigator.userAgent}
+      </p>
+      {stack && <pre className="app__error-stack">{stack}</pre>}
     </div>
   );
 }

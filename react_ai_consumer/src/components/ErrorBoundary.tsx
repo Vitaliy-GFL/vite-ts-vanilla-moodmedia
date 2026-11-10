@@ -9,13 +9,14 @@ interface ErrorBoundaryProps {
 
 interface ErrorBoundaryState {
   message: string | null;
+  stack?: string;
 }
 
 export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   state: ErrorBoundaryState = { message: null };
 
   static getDerivedStateFromError(error: unknown): ErrorBoundaryState {
-    return { message: error instanceof Error ? error.message : String(error) };
+    return error instanceof Error ? { message: error.message, stack: error.stack } : { message: String(error) };
   }
 
   componentDidCatch(error: Error): void {
@@ -27,7 +28,7 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
 
   render() {
     if (this.state.message !== null) {
-      return <ErrorScreen message={this.state.message} />;
+      return <ErrorScreen message={this.state.message} stack={this.state.stack} />;
     }
     return this.props.children;
   }

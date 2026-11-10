@@ -46,6 +46,7 @@ The same token (with `read:packages`) works across every VisualSolutions-scoped 
 Player API wrappers (`playback`, `playlist`, `p2p`, `analytics`, `player-params`, `debug`) and the Harmony types (`window.Loader` typings, `MframeComponent`, etc.) are **not** in this repo — they come from `@visualsolutions/player-api`, imported per-subpath, e.g. `import { P2PClient } from "@visualsolutions/player-api/p2p"`. Importing any subpath transitively registers the global `window.Loader`/`window.Player` typings.
 
 ```txt
+main.html                       # Dev entry (dist/index.html after build) + inline crash reporter
 src/
 ├── main.tsx                    # React entry point
 ├── App.tsx                     # Main component with lifecycle initialization
@@ -58,12 +59,13 @@ src/
 │   ├── DebugModal.tsx          # Draggable/resizable debug console overlay
 │   ├── DebugModal.scss
 │   ├── ErrorBoundary.tsx       # Catches render errors, reports them via Loader.error()
-│   └── ErrorScreen.tsx         # Error UI (init + render errors), keeps DebugModal visible
+│   └── ErrorScreen.tsx         # Error UI (init + render errors): message, browser, stack; keeps DebugModal visible
 ├── hooks/
-│   └── useConsoleCapture.ts    # Module-level console.log/warn/error capture (installed in main.tsx) + hook
+│   └── useConsoleCapture.ts    # Module-level console.log/warn/error + uncaught error capture (installed in main.tsx) + hook
 ├── config/
 │   └── design.ts               # DESIGN_WIDTH / DESIGN_HEIGHT (single source for Sass + JS)
 ├── utils/
+│   ├── browser.ts              # BROWSER — engine version from the user agent ("Chrome 74.0.3729.136")
 │   └── px.ts                   # JS px-to-vw/vh helpers (viewport + aspect-relative)
 └── styles/
     ├── _functions.scss         # Sass px-to-vw/vh helpers (viewport + aspect-relative)
@@ -82,6 +84,16 @@ Initialization order in `App.tsx` is **mandatory**:
 4. After `isStarted` — animations can run and Playback API can be used
 
 `window.mvTemplate` is registered for live-update in the Harmony Editor.
+
+## Crash reporting
+
+Three layers, each showing the browser version from the user agent (the engine the player really uses):
+
+- **The app did not start** (the bundle failed to load or parse, e.g. syntax too new for the engine): the inline ES5 script in `main.html` collects `error` / `unhandledrejection` events with file, line, column and stack into `window.mvCrashReport`. On a player (a `data` URL parameter; the Harmony editor and the dev server have none), if `main.tsx` has not set `mvCrashReport.started` within 15 s, it prints the browser, UA, URL and the errors over the page (and takes the overlay down if the app starts later after all). Keep the script plain ES5 (no trailing commas in calls either) and outside the bundle; the bundle itself must start without it, so guard every `window.mvCrashReport` access.
+- **Init or render crash:** `ErrorScreen` (from the `bootstrap()` catch in `App.tsx` or from `ErrorBoundary`) with the message, browser and stack trace.
+- **Uncaught errors after the start** (event handlers, timers, promises, resources that failed to load): an `ERR` entry in `DebugModal`, only when `debug.enabled` is on. They do not replace the screen. Errors collected before the bundle ran are listed there too.
+
+`DebugModal` shows the browser in its header and the full user agent when expanded. Stack traces of a build point into the minified `index-legacy-*.js`. `npm run build` deletes the `.map` files (they stay out of the player zip), so to resolve a trace check out the same commit and run `npm run build:simple`, which leaves them in `dist/assets`. Do not rename the global to `window.crashReport` — recent Chrome has a built-in with that name.
 
 ## Device constraints
 
@@ -102,7 +114,7 @@ Learned on Dyson PC-921 (mvision-templates, `custom/Dyson/PC/Apps/react_versions
 - **The default `chrome 89` target does not run there.** `?.` and `??` (Chrome 80) stay in `index-legacy-*.js`, the script fails with `Unexpected token .` and the template shows a black screen (or only its static preview). For ELO set `legacy({ renderModernChunks: false, targets: ["chrome 74"] })` in `vite.config.ts`.
 - **No CSS newer than Chrome 74 either:** no flex `gap` (84; use margins), `inset` (87) or `aspect-ratio` (88); `min()`/`max()`/`clamp()` (79) are already banned above.
 - **The template is served from `http://127.0.0.1`, not `file://`.** Leave `crossorigin` on the script tags: it is not the cause of a black screen, and without it the bundle starts running in the Harmony editor preview, where `getComponents()` gets no answer.
-- **`chrome://inspect` does not reach the player.** To see why a build fails on the device, put an inline script in `main.html` that collects `error`/`unhandledrejection` events and, if the app has not started within ~15 s, prints `location.href`, `navigator.userAgent` and the errors over the page (Dyson PC-921's `main.html` has one).
+- **`chrome://inspect` does not reach the player.** To see why a build fails on the device, read the overlay of the crash reporter in `main.html` (see Crash reporting): ~15 s after a failed start it prints the browser, `location.href` and the errors over the page.
 - **Check the bundle after the build:** parse `dist/assets/index-legacy-*.js` (e.g. with acorn) and look for syntax newer than the target (optional chaining, `??`, logical assignment).
 
 ## Commands
