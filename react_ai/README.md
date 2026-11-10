@@ -146,7 +146,7 @@ npm run build         # lint → format check → tsc → vite build → mtempla
 npm run build:simple  # tsc + vite build only, no zip (fast check)
 ```
 
-`npm run build` produces **`vite-react-ts-moodmedia-ai-1.0.0.zip`** in the repo root — the name is
+`npm run build` produces **`vite-react-ts-moodmedia-ai-1.1.0.zip`** in the repo root — the name is
 `<name>-<version>` from `package.json`, so bump `version` there for each release. This zip is what
 you upload to Harmony — see [Getting the template into Harmony](#getting-the-template-into-harmony)
 for the upload and re-upload steps.
@@ -247,7 +247,7 @@ Players run old embedded browsers on weak hardware. Do not:
 
 ### Getting the template into Harmony
 
-The developer hands you a **zip file** (for example `vite-react-ts-moodmedia-ai-1.0.0.zip`). Do not
+The developer hands you a **zip file** (for example `vite-react-ts-moodmedia-ai-1.1.0.zip`). Do not
 unpack it — Harmony expects the archive as-is.
 
 Both flows below start the same way: **log in → select your workgroup → open "HTML Editor"**.
