@@ -115,11 +115,15 @@ The `renderType` column lists valid values for `typeOptions.renderType`.
 
 ## Multiline strings
 
-Do not use `renderType: "limited"`, `multiline` or `maxCharacters` — they render broken in the Harmony editor. Instead keep a plain `string` and write a literal `\n` for a line break (in `mframe.json` that is `"\\n"`; Harmony shows it as `\n`), then split it in code:
+Do not use `renderType: "limited"`, `multiline` or `maxCharacters` — they render broken in the Harmony editor. Instead keep a plain `string` and write a literal `\n` for a line break (in `mframe.json` that is `"\\n"`; Harmony shows it as `\n`), then turn it into a real newline with `withLineBreaks()` and render it with the `pre-line` class:
 
-```ts
-const lines = text.split(/\\n|\r?\n/); // accepts both the literal \n and real newlines
+```tsx
+import { withLineBreaks } from "@/utils/text";
+
+<p className="pre-line">{withLineBreaks(text)}</p>;
 ```
+
+When each line needs its own element, split the result: `withLineBreaks(text).split("\n")`.
 
 Mention it in the tooltip, e.g. `"Use \\n for a line break"`.
 

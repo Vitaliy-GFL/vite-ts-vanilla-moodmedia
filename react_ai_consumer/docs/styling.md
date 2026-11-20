@@ -87,3 +87,12 @@ import { pxa, pxha, fonta } from "@/utils/px";
 - **Discuss the CSS layout approach with the user before implementing.** Don't default to `position: absolute` for everything: some menus should stretch to fill the free space (flex/grid/flow), others must sit at a specific spot — agree on this first.
 - **Anchor spacing to the edge the element is pinned to.** For a banner fixed at the bottom, set the offset on the bottom (not the top); same for disclaimers, which usually sit at the bottom. When such a block's line count changes, the bottom offset must stay constant and the block should grow upward / shrink downward — anchor it to the bottom so its baseline doesn't move.
 - If a template contains several menus, add a dev-mode-only popup overlay to switch between them (for previewing each menu without rebuilding).
+
+## FadeImage
+
+`<FadeImage src={url} className="…" durationMs={500} />` (`src/components/FadeImage.tsx`) changes an image without a blank frame: the new `src` is loaded off screen, then fades in over the old one, and the old one is removed. If the new image fails to load, the old one stays; an empty `src` clears the image. Size and place the wrapper (`position` is left to you) (`className`/`style`); the images fill it with `object-fit: cover` — override `.fade-image__img` for another fit.
+
+## Big images in small slots
+
+The player downscales an image in one cheap bilinear step, so a big upload (e.g. 1920×1080 from a playlist) in a small slot comes out pixelated. Desktop Chrome does not show it. For such slots draw the image into a `<canvas>` with `resample(img, w, h)` (`src/utils/resample.ts`), where `w`/`h` are the slot's size in device pixels (`getBoundingClientRect()` × `devicePixelRatio`, rounded): it cover-crops to the centre and halves the image in exact 2× steps, which stays sharp.
+

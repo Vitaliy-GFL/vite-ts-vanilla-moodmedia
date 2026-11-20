@@ -67,7 +67,8 @@ export default defineConfig({
     },
   },
   // Keep function/class .name intact across transform and minification.
-  // The Android player looks up P2P callbacks by function name (see src/services/api/p2p.ts).
+  // The Android player looks up the playlist and P2P callbacks of @visualsolutions/player-api
+  // by function name (see docs/player-api.md).
   build: {
     sourcemap: true,
     minify: "terser",

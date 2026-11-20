@@ -26,3 +26,24 @@ const peers = p2p.getPeers(); // server mode only
 - `"ping"` and `"pong"` are reserved type names but still delivered to user subscriptions if present.
 - Server mode (`isServer: true`) broadcasts `ping` every 60 seconds and marks a peer `online: false` if it did not respond within 3 seconds of the ping. Peers are never removed from the list.
 - No `off`/`once`/`dispose` — instances live for the template lifetime.
+
+## Template helpers
+
+Thin layers over the wrappers, in this repo:
+
+- **`usePlaylistMedia(playlistId)`** (`src/hooks/usePlaylistMedia.ts`) — `{ [description]: url }` for the items of a playlist, keyed by the item's description, lowercased. Match by description, not name: Harmony appends a short hash to the name on upload. The URL is `../${contentPlayerFileName}` (media files sit one directory up from the template). The dev server has no playlists, so while the map is empty it returns `DEV_MEDIA` from `src/config/devMedia.ts`: put the files in `/dev-media` at the project root (outside `public/`, so they never reach the zip) and keep the map's values plain string literals, so the build drops them. A playlist picked in a `mediaReference` param comes as `number[]`; pass its first id:
+
+  ```ts
+  const playlistId = useTemplateStore((s) => s.getParam<number[]>("menu", "playlist")?.[0]);
+  const images = usePlaylistMedia(playlistId);
+  ```
+- **`getPlayerParams(defaults, timeoutMs = 5000)`** (`src/utils/playerParams.ts`) — `getPlayerParameters` with a default per key: a missing (null/empty) key gets its default, and so does every key when the player does not answer in time (the editor preview and the dev server may never answer).
+
+  ```ts
+  const { LOCATION_ID } = await getPlayerParams({ LOCATION_ID: "12068" });
+  ```
+
+## Feeds
+
+`useFeed<T>(path, { intervalMs, timeoutMs, enabled })` (`src/hooks/useFeed.ts`) polls a JSON feed and returns `{ data, error, updatedAt }`. A path is resolved against `VITE_FEEDS_BASE` (`.env.development` → `https://mood.local`, the local feeds-api; `.env.production` → the production host); a full URL is used as is. A failed request keeps the last good `data`, sets `error` and logs a `console.warn` (shown in `DebugModal`); requests never overlap. Pass `enabled: isStarted` to hold the requests until the template is on screen.
+

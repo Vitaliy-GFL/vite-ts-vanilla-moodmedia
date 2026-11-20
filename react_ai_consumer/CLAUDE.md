@@ -47,6 +47,7 @@ Player API wrappers (`playback`, `playlist`, `p2p`, `analytics`, `player-params`
 
 ```txt
 main.html                       # Dev entry (dist/index.html after build) + inline crash reporter
+.env.development / .env.production # VITE_FEEDS_BASE: mood.local on the dev server, production host in a build
 src/
 ├── main.tsx                    # React entry point
 ├── App.tsx                     # Main component with lifecycle initialization
@@ -59,14 +60,22 @@ src/
 │   ├── DebugModal.tsx          # Draggable/resizable debug console overlay; expanded, has "Exit to" Diagnostics/Settings buttons
 │   ├── DebugModal.scss
 │   ├── ErrorBoundary.tsx       # Catches render errors, reports them via Loader.error()
-│   └── ErrorScreen.tsx         # Error UI (init + render errors): message, browser, stack; keeps DebugModal visible
+│   ├── ErrorScreen.tsx         # Error UI (init + render errors): message, browser, stack; keeps DebugModal visible
+│   ├── FadeImage.tsx           # Image that preloads a new src and cross-fades to it; keeps the old one on a load error
+│   └── FadeImage.scss
 ├── hooks/
-│   └── useConsoleCapture.ts    # Module-level console.log/warn/error + uncaught error capture (installed in main.tsx) + hook
+│   ├── useConsoleCapture.ts    # Module-level console.log/warn/error + uncaught error capture (installed in main.tsx) + hook
+│   ├── useFeed.ts              # Polls a JSON feed (VITE_FEEDS_BASE + path); keeps the last good data on errors
+│   └── usePlaylistMedia.ts     # Harmony playlist → { description: media URL }; DEV_MEDIA on the dev server
 ├── config/
-│   └── design.ts               # DESIGN_WIDTH / DESIGN_HEIGHT (single source for Sass + JS)
+│   ├── design.ts               # DESIGN_WIDTH / DESIGN_HEIGHT (single source for Sass + JS)
+│   └── devMedia.ts             # Dev-only stand-in for playlists (files in /dev-media, never in the build)
 ├── utils/
 │   ├── browser.ts              # BROWSER — engine version from the user agent ("Chrome 74.0.3729.136")
-│   └── px.ts                   # JS px-to-vw/vh helpers (viewport + aspect-relative)
+│   ├── playerParams.ts         # getPlayerParams() — player (site) parameters with defaults and a timeout
+│   ├── px.ts                   # JS px-to-vw/vh helpers (viewport + aspect-relative)
+│   ├── resample.ts             # resample() — sharp downscale of a big image into a small slot (canvas, 2× steps)
+│   └── text.ts                 # withLineBreaks() — literal "\n" from mframe → newline (render with .pre-line)
 └── styles/
     ├── _functions.scss         # Sass px-to-vw/vh helpers (viewport + aspect-relative)
     ├── _variables.scss

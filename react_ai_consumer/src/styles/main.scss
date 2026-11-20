@@ -8,6 +8,11 @@ body {
   color: $color-text;
 }
 
+// Shows the newlines from withLineBreaks() (src/utils/text.ts).
+.pre-line {
+  white-space: pre-line;
+}
+
 .app {
   width: 100vw;
   height: 100vh;
