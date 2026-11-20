@@ -17,6 +17,7 @@ let installed = false;
 let earlyErrorsTaken = false;
 const originals: Partial<Record<LogLevel, (...args: unknown[]) => void>> = {};
 const listeners = new Set<() => void>();
+const entryListeners = new Set<(entry: LogEntry) => void>();
 
 function formatArgs(args: unknown[]): string {
   return args
@@ -43,9 +44,25 @@ function notify(): void {
 function push(level: LogLevel, args: string): void {
   // Mutate in place — a fresh array per log entry is needless GC pressure
   // on low-end devices; subscribers copy on read instead (see the hook).
-  entries.push({ id: ++idCounter, level, timestamp: Date.now(), args });
+  const entry = { id: ++idCounter, level, timestamp: Date.now(), args };
+  entries.push(entry);
   if (entries.length > MAX_ENTRIES) entries.shift();
   notify();
+  for (const listener of entryListeners) listener(entry);
+}
+
+// The entries captured so far (the last MAX_ENTRIES), oldest first. Do not mutate.
+export function getCapturedEntries(): readonly LogEntry[] {
+  return entries;
+}
+
+// Calls listener with every entry captured from now on (remote debug). The listener must not
+// write to the console itself: that would be captured and call it again.
+export function subscribeEntries(listener: (entry: LogEntry) => void): () => void {
+  entryListeners.add(listener);
+  return () => {
+    entryListeners.delete(listener);
+  };
 }
 
 // Captures console output for the whole template lifetime (not tied to a mounted

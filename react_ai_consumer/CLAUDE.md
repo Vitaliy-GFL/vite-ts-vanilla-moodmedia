@@ -47,12 +47,15 @@ Player API wrappers (`playback`, `playlist`, `p2p`, `analytics`, `player-params`
 
 ```txt
 main.html                       # Dev entry (dist/index.html after build) + inline crash reporter
-.env.development / .env.production # VITE_FEEDS_BASE: mood.local on the dev server, production host in a build
+.env.development / .env.production # VITE_FEEDS_BASE (feeds host) and VITE_LOGS_BASE (template-logs-api)
 src/
 ├── main.tsx                    # React entry point
 ├── App.tsx                     # Main component with lifecycle initialization
 ├── store/templateStore.ts      # Zustand store (components, isStarted, getParam)
 ├── services/
+│   ├── network-log.ts          # Request log: fetch/XHR/media loads, failures to console.warn (imported first)
+│   ├── remote-collectors.ts    # Remote debug commands: state, playlists, params, requests, dom, perf, reload
+│   ├── remote-debug.ts         # REMOTE_DEBUG device param → logs + heartbeat to template-logs-api, runs commands
 │   └── template-loader.ts      # window.Loader lifecycle wrapper (init, ready, start, finish)
 ├── components/
 │   ├── AspectRatioContainer.tsx # Maintains aspect ratio on resize (wraps all content)
@@ -96,11 +99,11 @@ Initialization order in `App.tsx` is **mandatory**:
 
 ## Crash reporting
 
-Three layers, each showing the browser version from the user agent (the engine the player really uses):
+Three layers, each showing the browser version from the user agent (the engine the player really uses). With the device parameter `REMOTE_DEBUG` set, all three also reach template-logs-api (see `docs/player-api.md`, "Remote debug"):
 
-- **The app did not start** (the bundle failed to load or parse, e.g. syntax too new for the engine): the inline ES5 script in `main.html` collects `error` / `unhandledrejection` events with file, line, column and stack into `window.mvCrashReport`. On a player (a `data` URL parameter; the Harmony editor and the dev server have none), if `main.tsx` has not set `mvCrashReport.started` within 15 s, it prints the browser, UA, URL and the errors over the page (and takes the overlay down if the app starts later after all). Keep the script plain ES5 (no trailing commas in calls either) and outside the bundle; the bundle itself must start without it, so guard every `window.mvCrashReport` access.
+- **The app did not start** (the bundle failed to load or parse, e.g. syntax too new for the engine): the inline ES5 script in `main.html` collects `error` / `unhandledrejection` events with file, line, column and stack into `window.mvCrashReport`. On a player (a `data` URL parameter; the Harmony editor and the dev server have none), if `main.tsx` has not set `mvCrashReport.started` within 15 s, it prints the browser, UA, URL and the errors over the page (and takes the overlay down if the app starts later after all), and sends them once to template-logs-api when remote debug is on (key from `window.Player.getParameter("REMOTE_DEBUG")` or the last one the bundle saw). Keep the script plain ES5 (no trailing commas in calls either) and outside the bundle; the bundle itself must start without it, so guard every `window.mvCrashReport` access.
 - **Init or render crash:** `ErrorScreen` (from the `bootstrap()` catch in `App.tsx` or from `ErrorBoundary`) with the message, browser and stack trace.
-- **Uncaught errors after the start** (event handlers, timers, promises, resources that failed to load): an `ERR` entry in `DebugModal`, only when `debug.enabled` is on. They do not replace the screen. Errors collected before the bundle ran are listed there too.
+- **Uncaught errors after the start** (event handlers, timers, promises, resources that failed to load): an `ERR` entry in `DebugModal`, only when `debug.enabled` is on (and sent by remote debug when that is on). They do not replace the screen. Errors collected before the bundle ran are listed there too.
 
 `DebugModal` shows the browser in its header and the full user agent when expanded. Stack traces of a build point into the minified `index-legacy-*.js`. `npm run build` deletes the `.map` files (they stay out of the player zip), so to resolve a trace check out the same commit and run `npm run build:simple`, which leaves them in `dist/assets`. Do not rename the global to `window.crashReport` — recent Chrome has a built-in with that name.
 

@@ -36,6 +36,9 @@ function renameHtmlOutput(): Plugin {
   };
 }
 
+// For %VITE_APP_VERSION% in main.html: the crash path sends it, and `define` does not reach the HTML.
+process.env.VITE_APP_VERSION = pck.version;
+
 export default defineConfig({
   plugins: [
     legacy({ renderModernChunks: false, targets: ["chrome 89"] }),

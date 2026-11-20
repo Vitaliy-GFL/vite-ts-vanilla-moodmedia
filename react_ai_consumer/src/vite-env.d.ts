@@ -5,6 +5,8 @@ declare const __APP_VERSION__: string;
 interface ImportMetaEnv {
   // Feeds API host, from .env.development / .env.production.
   readonly VITE_FEEDS_BASE: string | undefined;
+  // template-logs-api base (remote debug), from .env.development / .env.production.
+  readonly VITE_LOGS_BASE: string | undefined;
 }
 
 interface Window {

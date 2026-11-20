@@ -5,6 +5,7 @@ import DebugModal from "@/components/DebugModal";
 import ErrorScreen from "@/components/ErrorScreen";
 import { DESIGN_WIDTH, DESIGN_HEIGHT } from "@/config/design";
 import { installConsoleCapture, uninstallConsoleCapture } from "@/hooks/useConsoleCapture";
+import { isRemoteDebugOn, startRemoteDebug } from "@/services/remote-debug";
 import { initTemplate, signalReady, signalError, waitForStart, getDuration } from "@/services/template-loader";
 import { useTemplateStore } from "@/store/templateStore";
 
@@ -18,9 +19,9 @@ function App() {
 
   useEffect(() => {
     // Console capture is on from the first line of main.tsx so early logs are
-    // not lost; once params are known, keep it only if debug is enabled.
+    // not lost; once params are known, keep it only if debug or remote debug is on.
     function applyConsoleCapture() {
-      if (useTemplateStore.getState().getParam<boolean>("debug", "enabled")) {
+      if (useTemplateStore.getState().getParam<boolean>("debug", "enabled") || isRemoteDebugOn()) {
         installConsoleCapture();
       } else {
         uninstallConsoleCapture();
@@ -28,6 +29,8 @@ function App() {
     }
 
     async function bootstrap() {
+      // Before mframe: a template whose init fails or hangs is the one most worth seeing.
+      startRemoteDebug(applyConsoleCapture);
       try {
         const components = await initTemplate();
         setComponents(components);

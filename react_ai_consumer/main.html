@@ -8,8 +8,9 @@
       // Crash reporter. Plain ES5 and outside the bundle on purpose: it has to work when the bundle
       // itself fails to parse on an old engine. It collects every uncaught error with its file, line
       // and stack. On a player (a `data` URL parameter; the Harmony editor has none), if the app has
-      // not started within 15 s, it prints the browser, the URL and the errors over the page. After
-      // the start the bundle takes the errors into DebugModal (see useConsoleCapture.ts).
+      // not started within 15 s, it prints the browser, the URL and the errors over the page, and
+      // sends them once to template-logs-api if remote debug is on for the device. After the start
+      // the bundle takes the errors into DebugModal and remote debug (see useConsoleCapture.ts).
       (function () {
         var report = (window.mvCrashReport = { errors: [], started: false, onError: null });
 
@@ -49,8 +50,57 @@
           add("Unhandled rejection: " + text);
         });
 
+        // Remote debug for a bundle that never ran: the key is the device parameter REMOTE_DEBUG,
+        // read natively, or the last one the bundle saw (src/services/remote-debug.ts keeps it in
+        // localStorage under the same name). One request, as a "crash-…" session.
+        function sendCrash() {
+          // An empty answer means the parameter is cleared: off. Only no answer at all (no
+          // native call, null, an exception) falls back to the remembered key.
+          var key = null;
+          try {
+            if (window.Player && window.Player.getParameter) key = window.Player.getParameter("REMOTE_DEBUG");
+          } catch (err) {}
+          if (key === null || key === undefined) {
+            try {
+              key = localStorage.getItem("mvRemoteDebugKey") || "";
+            } catch (err) {
+              key = "";
+            }
+          }
+          key = String(key).replace(/^\s+|\s+$/g, "").slice(0, 100);
+          if (!key) return;
+
+          var now = new Date().getTime();
+          var entries = [{ t: now, level: "error", msg: "Template did not start within 15 s" }];
+          for (var i = 0; i < report.errors.length; i++) {
+            entries.push({ t: now, level: "error", msg: String(report.errors[i]).slice(0, 4096) });
+          }
+          try {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "%VITE_LOGS_BASE%/api/logs");
+            // text/plain: a simple request, no CORS preflight.
+            xhr.setRequestHeader("Content-Type", "text/plain");
+            xhr.send(
+              JSON.stringify({
+                key: key,
+                session: "crash-" + Math.random().toString(36).slice(2, 10),
+                template: document.title,
+                version: "%VITE_APP_VERSION%",
+                entries: entries,
+                state: {
+                  userAgent: navigator.userAgent,
+                  href: location.href,
+                  system: typeof window.System,
+                  loader: typeof window.Loader,
+                },
+              })
+            );
+          } catch (err) {}
+        }
+
         setTimeout(function () {
           if (report.started || !/[?&]data(=|&|#|$)/.test(location.href)) return;
+          sendCrash();
           var box = document.createElement("pre");
           box.style.cssText =
             "position:fixed;left:0;right:0;bottom:0;max-height:60%;overflow:auto;margin:0;padding:1vh;" +

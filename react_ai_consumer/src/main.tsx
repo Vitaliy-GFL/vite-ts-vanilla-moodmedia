@@ -1,3 +1,5 @@
+// First: wraps fetch and XMLHttpRequest before the Loader below loads mframe.json with them.
+import "@/services/network-log";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import "mtemplate-loader/release/js/es6-shim.min.js";
