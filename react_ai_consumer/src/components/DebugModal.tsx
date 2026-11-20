@@ -1,8 +1,10 @@
+import { openDiagnosticsApp, openSettingsApp } from "@visualsolutions/player-api/apps";
 import { openDevTools } from "@visualsolutions/player-api/debug";
 import { P2PClient } from "@visualsolutions/player-api/p2p";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useConsoleCapture, type LogLevel } from "@/hooks/useConsoleCapture";
+import { useTemplateStore } from "@/store/templateStore";
 import { BROWSER } from "@/utils/browser";
 
 import "./DebugModal.scss";
@@ -36,6 +38,8 @@ interface Size {
 }
 export default function DebugModal() {
   const { logs, clear } = useConsoleCapture();
+  // ErrorScreen shows this modal even when mframe did not load; offer the exits only when debug is on.
+  const appsEnabled = useTemplateStore((s) => !!s.getParam<boolean>("debug", "enabled"));
   const [collapsed, setCollapsed] = useState(true);
   const [filter, setFilter] = useState<LogLevel | "all">("all");
 
@@ -166,6 +170,19 @@ export default function DebugModal() {
               P2P
             </button>
           </div>
+
+          {/* Each opens a player app and closes playback, this template included. */}
+          {appsEnabled && (
+            <div className="debug-modal__apps">
+              <span className="debug-modal__apps-label">Exit to:</span>
+              <button className="debug-modal__app-btn" onClick={openDiagnosticsApp} title="Player Diagnostics">
+                Diagnostics
+              </button>
+              <button className="debug-modal__app-btn" onClick={() => openSettingsApp()} title="Player Settings">
+                Settings
+              </button>
+            </div>
+          )}
 
           <div className="debug-modal__ua">{navigator.userAgent}</div>
 
