@@ -233,7 +233,9 @@ interface StorageItem {
   truncated?: boolean;
 }
 
-function storageListing(): { items: StorageItem[]; totalBytes: number; kept: string[] } {
+// Values are cut, then left out; with too many items for even that, only a summary goes, so a
+// set, remove or clear that was done still answers ok.
+function storageListing(): { items: StorageItem[]; totalBytes: number; kept: string[] } | string {
   const items: StorageItem[] = [];
   for (let i = 0; i < localStorage.length; i++) {
     const name = localStorage.key(i);
@@ -251,6 +253,14 @@ function storageListing(): { items: StorageItem[]; totalBytes: number; kept: str
       }
     }
   }
+  if (!fits(result)) {
+    for (const item of items) {
+      if (item.value === "") continue;
+      item.value = "";
+      item.truncated = true;
+    }
+  }
+  if (!fits(result)) return `${items.length} items, ${result.totalBytes} bytes: too many to list`;
   return result;
 }
 

@@ -2,6 +2,7 @@ import { getPlayerParameters } from "@visualsolutions/player-api/player-params";
 
 import { getCapturedEntries, subscribeEntries, type LogEntry } from "@/hooks/useConsoleCapture";
 import { collectState, runCommand, utf8Length, type Command, type CommandResult } from "@/services/remote-collectors";
+import { markRemoteReload, startsAfterReload } from "@/services/template-loader";
 
 // Remote debug: while the device parameter REMOTE_DEBUG is non-empty, the template sends its
 // console output to template-logs-api every 10 s, filed under that value (the key; devices give
@@ -22,8 +23,6 @@ const BODY_BYTES = 240_000;
 // Also read by the crash path in main.html: keep the names in sync.
 const KEY_STORAGE = "mvRemoteDebugKey";
 const BUFFER_STORAGE = "mvRemoteDebugBuffer";
-// Read by waitForStart() in template-loader.ts.
-const RELOAD_STORAGE = "mvRemoteReloadAt";
 
 interface Buffered {
   session: string;
@@ -144,8 +143,15 @@ async function runQueue(): Promise<void> {
   while (queue.length > 0) {
     const command = queue.shift()!;
     // oxlint-disable-next-line no-await-in-loop
-    const result = await runCommand(command);
+    let result = await runCommand(command);
     if (gen !== generation) break;
+    // Checked (not left) before "ok" goes out: a page left without the marker would stay black.
+    if (command.type === "reload" && result.ok && startsAfterReload() && !markRemoteReload(true))
+      result = {
+        id: command.id,
+        ok: false,
+        error: "localStorage is off or full: the reloaded template would not start",
+      };
     results.push(result);
     if (command.type === "reload" && result.ok) reloadId = command.id;
   }
@@ -223,13 +229,21 @@ async function send(): Promise<void> {
       saveSoon();
     }
     if (ok && withState) stateSent = true;
+    // A rejected batch took the reload result with it: no later answer will name it.
+    if (rejected && reloadId !== null && sentResults.some((r) => r.id === reloadId)) reloadId = null;
     if (ok && reloadId !== null && sentResults.some((r) => r.id === reloadId)) {
-      // Written now, not in a second: the reload would lose what is still unsaved.
-      writeStorage(BUFFER_STORAGE, buffer.length > 0 ? JSON.stringify(buffer) : null);
-      // The player will not start the reloaded page: template-loader.ts starts it itself.
-      writeStorage(RELOAD_STORAGE, String(Date.now()));
-      location.reload();
-      return;
+      // The player will not start the reloaded page: template-loader.ts starts it itself (see
+      // startsAfterReload). The marker goes before the buffer, which could fill the storage.
+      if (startsAfterReload() && !markRemoteReload()) {
+        reloadId = null;
+        // Captured and sent: the page already shows the reload as done.
+        console.warn("Remote reload skipped: localStorage is off or full, the page would not start");
+      } else {
+        // Written now, not in a second: the reload would lose what is still unsaved.
+        writeStorage(BUFFER_STORAGE, buffer.length > 0 ? JSON.stringify(buffer) : null);
+        location.reload();
+        return;
+      }
     }
     if (commands.length > 0) enqueue(commands);
   } finally {
