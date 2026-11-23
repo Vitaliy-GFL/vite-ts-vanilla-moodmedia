@@ -54,7 +54,7 @@ src/
 ├── store/templateStore.ts      # Zustand store (components, isStarted, getParam)
 ├── services/
 │   ├── network-log.ts          # Request log: fetch/XHR/media loads, failures to console.warn (imported first)
-│   ├── remote-collectors.ts    # Remote debug commands: state, playlists, params, requests, dom, perf, reload
+│   ├── remote-collectors.ts    # Remote debug commands: state, playlists, params, requests, dom, perf, storage, reload
 │   ├── remote-debug.ts         # REMOTE_DEBUG device param → logs + heartbeat to template-logs-api, runs commands
 │   └── template-loader.ts      # window.Loader lifecycle wrapper (init, ready, start, finish)
 ├── components/

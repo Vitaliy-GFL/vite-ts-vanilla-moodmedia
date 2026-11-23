@@ -217,10 +217,53 @@ async function collectPerf(): Promise<Record<string, unknown>> {
   };
 }
 
+// localStorage of the template. Values longer than STORAGE_VALUE_CHARS are cut only when the
+// whole listing would not fit a result; a cut item is marked, and the page does not offer to
+// edit it (it would be saved cut).
+const STORAGE_VALUE_CHARS = 2_000;
+// Remote debug's own items survive a clear: without them the device would forget its key for a
+// minute and lose the entries not sent yet.
+const KEPT_ON_CLEAR = ["mvRemoteDebugKey", "mvRemoteDebugBuffer"];
+
+interface StorageItem {
+  name: string;
+  value: string;
+  bytes: number;
+  length: number;
+  truncated?: boolean;
+}
+
+function storageListing(): { items: StorageItem[]; totalBytes: number; kept: string[] } {
+  const items: StorageItem[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const name = localStorage.key(i);
+    if (name === null) continue;
+    const value = localStorage.getItem(name) ?? "";
+    items.push({ name, value, bytes: utf8Length(name + value), length: value.length });
+  }
+  items.sort((a, b) => a.name.localeCompare(b.name));
+  const result = { items, totalBytes: items.reduce((sum, i) => sum + i.bytes, 0), kept: KEPT_ON_CLEAR };
+  if (!fits(result)) {
+    for (const item of items) {
+      if (item.value.length > STORAGE_VALUE_CHARS) {
+        item.value = item.value.slice(0, STORAGE_VALUE_CHARS);
+        item.truncated = true;
+      }
+    }
+  }
+  return result;
+}
+
+function clearStorage(): void {
+  const kept = KEPT_ON_CLEAR.map((name) => [name, localStorage.getItem(name)] as const);
+  localStorage.clear();
+  for (const [name, value] of kept) if (value !== null) localStorage.setItem(name, value);
+}
+
 export interface Command {
   id: string;
   type: string;
-  args?: { keys?: string[] };
+  args?: { keys?: string[]; name?: string; value?: string };
 }
 
 export interface CommandResult {
@@ -259,6 +302,24 @@ export async function runCommand(command: Command): Promise<CommandResult> {
         break;
       case "reload":
         data = "reloading";
+        break;
+      case "storage":
+        data = storageListing();
+        break;
+      case "storage-set":
+        if (command.args?.name === undefined || command.args.value === undefined)
+          throw new Error("needs name and value");
+        localStorage.setItem(command.args.name, command.args.value);
+        data = storageListing();
+        break;
+      case "storage-remove":
+        if (command.args?.name === undefined) throw new Error("needs name");
+        localStorage.removeItem(command.args.name);
+        data = storageListing();
+        break;
+      case "storage-clear":
+        clearStorage();
+        data = storageListing();
         break;
       default:
         return { id: command.id, ok: false, error: `unknown command ${command.type}: update the template` };

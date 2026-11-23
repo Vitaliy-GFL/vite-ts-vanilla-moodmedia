@@ -22,6 +22,8 @@ const BODY_BYTES = 240_000;
 // Also read by the crash path in main.html: keep the names in sync.
 const KEY_STORAGE = "mvRemoteDebugKey";
 const BUFFER_STORAGE = "mvRemoteDebugBuffer";
+// Read by waitForStart() in template-loader.ts.
+const RELOAD_STORAGE = "mvRemoteReloadAt";
 
 interface Buffered {
   session: string;
@@ -224,6 +226,8 @@ async function send(): Promise<void> {
     if (ok && reloadId !== null && sentResults.some((r) => r.id === reloadId)) {
       // Written now, not in a second: the reload would lose what is still unsaved.
       writeStorage(BUFFER_STORAGE, buffer.length > 0 ? JSON.stringify(buffer) : null);
+      // The player will not start the reloaded page: template-loader.ts starts it itself.
+      writeStorage(RELOAD_STORAGE, String(Date.now()));
       location.reload();
       return;
     }
