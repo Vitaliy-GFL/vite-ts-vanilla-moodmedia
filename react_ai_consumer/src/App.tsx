@@ -76,7 +76,7 @@ function App() {
 
   return (
     <div className="app">
-      {debugEnabled && <DebugModal />}
+      {debugEnabled && <DebugModal big />}
 
       <AspectRatioContainer ratio={DESIGN_WIDTH / DESIGN_HEIGHT}>
         <h1 style={{ fontSize: pxa(40) }}>Harmony Template</h1>

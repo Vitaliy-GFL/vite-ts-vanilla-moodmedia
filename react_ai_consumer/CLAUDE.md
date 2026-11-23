@@ -60,7 +60,7 @@ src/
 ├── components/
 │   ├── AspectRatioContainer.tsx # Maintains aspect ratio on resize (wraps all content)
 │   ├── AspectRatioContainer.scss
-│   ├── DebugModal.tsx          # Draggable/resizable debug console overlay; expanded, has "Exit to" Diagnostics/Settings buttons
+│   ├── DebugModal.tsx          # Draggable/resizable debug console overlay; on a player opens expanded at 80% (not over ErrorScreen); expanded, has "Exit to" Diagnostics/Settings buttons
 │   ├── DebugModal.scss
 │   ├── ErrorBoundary.tsx       # Catches render errors, reports them via Loader.error()
 │   ├── ErrorScreen.tsx         # Error UI (init + render errors): message, browser, stack; keeps DebugModal visible

@@ -36,18 +36,30 @@ interface Size {
   w: number;
   h: number;
 }
-export default function DebugModal() {
+// A player opens the template with a `data` URL parameter; the Harmony editor and the dev server
+// have none (the same check as the crash reporter in main.html).
+const ON_PLAYER = /[?&]data(=|&|#|$)/.test(location.href);
+
+// `big`: opens expanded over most of the screen, on a player only (in the editor preview it would
+// cover the template). ErrorScreen leaves it off so the error stays readable.
+export default function DebugModal({ big = false }: { big?: boolean }) {
   const { logs, clear } = useConsoleCapture();
   // ErrorScreen shows this modal even when mframe did not load; offer the exits only when debug is on.
   const appsEnabled = useTemplateStore((s) => !!s.getParam<boolean>("debug", "enabled"));
-  const [collapsed, setCollapsed] = useState(true);
+  const opensBig = big && ON_PLAYER;
+  const [collapsed, setCollapsed] = useState(!opensBig);
   const [filter, setFilter] = useState<LogLevel | "all">("all");
 
-  const [size, setSize] = useState<Size>(() => ({ w: window.innerWidth / 3, h: window.innerHeight / 3 }));
-  const [pos, setPos] = useState<Position>(() => ({
-    x: window.innerWidth - window.innerWidth / 3 - 100,
-    y: window.innerHeight - window.innerHeight / 3 - 100,
-  }));
+  const [size, setSize] = useState<Size>(() =>
+    opensBig
+      ? { w: window.innerWidth * 0.8, h: window.innerHeight * 0.8 }
+      : { w: window.innerWidth / 3, h: window.innerHeight / 3 },
+  );
+  const [pos, setPos] = useState<Position>(() =>
+    opensBig
+      ? { x: window.innerWidth * 0.1, y: window.innerHeight * 0.1 }
+      : { x: window.innerWidth - window.innerWidth / 3 - 100, y: window.innerHeight - window.innerHeight / 3 - 100 },
+  );
 
   const dragging = useRef(false);
   const resizing = useRef(false);
@@ -69,7 +81,7 @@ export default function DebugModal() {
 
   useEffect(() => {
     if (!collapsed) {
-      logsEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      logsEndRef.current?.scrollIntoView();
     }
   }, [logs, collapsed]);
 
